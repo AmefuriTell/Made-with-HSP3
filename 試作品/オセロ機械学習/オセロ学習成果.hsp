@@ -1,0 +1,328 @@
+#include "quicksort.hsp"
+screen 0,800,800
+width ,,ginfo_dispx - ginfo_sizex + 1,0
+
+celload "画像ファイル/盤面(空).png",100
+celload "画像ファイル/盤面(白).png",99
+celload "画像ファイル/盤面(黒).png",101
+randomize
+
+//??????`?q????
+    dim genome,64
+    notesel gene_text
+    noteload "学習結果/ゲノム/genome.gen"
+    i = 0
+    repeat notemax
+        noteget l,i
+        genome(i) = int(l) - 1
+        i++
+    loop
+    dim board_score,64
+
+
+    
+//?w?K?J?n
+    //?I?Z??
+        repeat 1
+            dim board,10,10//0:?? 1:?? -1:?? 2:?? 3:?u????
+            dim can_count,2
+            dim put_disk_pos,2,50
+            dim put_disk_num,2
+            //????????
+                gosub *reset_board
+            //???C??
+            gosub *draw_board
+            wait 500
+            repeat
+                gosub *check_can_put_disk
+                gosub *draw_board
+                if(can_count(0) == 0 and can_count(1) == 0):break
+                turn *= -1
+                wait 50
+            loop
+            wait
+            //?]?? & ?X?V
+        loop
+        stop
+    *check_can_put_disk
+        can_square_count = 0
+        i = 0
+        repeat 64
+            x = genome(i) \ 8 + 1:y = genome(i) / 8 + 1
+            if(board(x,y) == 0){
+                //??
+                    if(board(x, y - 1) == -turn){
+                        k = -1
+                        repeat
+                            if(board(x, y + k) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x, y + k) == 2 || board(x, y + k) == 0 || board(x, y + k) == 3){
+                                break
+                            }
+                            k--
+                        loop
+                    }
+                //?E
+                    if(board(x + 1,y) == -turn){
+                        k = 1
+                        repeat 
+                            if(board(x + k,y) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x + k,y) == 2 || board(x + k,y) == 0 || board(x + k,y) == 3){
+                                break
+                            }
+                            k++
+                        loop
+                    }
+                //??
+                    if(board(x,y + 1) == -turn){
+                        k = 1
+                        repeat
+                            if(board(x,y + k) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x,y + k) == 2 || board(x,y + k) == 0 || board(x,y + k) == 3){
+                                break
+                            }
+                            k++
+                        loop
+                    }
+                //??
+                    if(board(x - 1,y) == -turn){
+                        k = -1
+                        repeat 
+                            if(board(x + k,y) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x + k,y) == 2 || board(x + k,y) == 0 || board(x + k,y) == 3){
+                                break
+                            }
+                            k--
+                        loop
+                    }
+                //?E??
+                    if(board(x + 1,y - 1) == -turn){
+                        k = 1
+                        repeat
+                            if(board(x + k,y - k) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x + k,y - k) == 2 || board(x + k,y - k) == 0 || board(x + k,y - k) == 3){
+                                break
+                            }
+                            k++
+                        loop
+                    }
+                //?E??
+                    if(board(x + 1,y + 1) == -turn){
+                        k = 1
+                        repeat
+                            if(board(x + k,y + k) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x + k,y + k) == 2 || board(x + k,y + k) == 0 || board(x + k,y + k) == 3){
+                                break
+                            }
+                            k++
+                        loop
+                    }
+                //????
+                    if(board(x - 1,y + 1) == -turn){
+                        k = 1
+                        repeat
+                            if(board(x - k,y + k) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x - k,y + k) == 2 || board(x - k,y + k) == 0 || board(x - k,y + k) == 3){
+                                break
+                            }
+                            k++
+                        loop
+                    }
+                //????
+                    if(board(x - 1,y - 1) == -turn){
+                        k = 1
+                        repeat
+                            if(board(x - k,y - k) == turn){
+                                can_square_count++
+                                break
+                            }else:if(board(x - k,y - k) == 2 || board(x - k,y - k) == 0 || board(x - k,y - k) == 3){
+                                break
+                            }
+                            k++
+                        loop
+                    }
+                
+                //?????????
+                    if(can_square_count != 0):break
+            }
+            i++
+        loop
+        if(turn == 1):can_count(0) = can_square_count:else:can_count(1) = can_square_count
+        if(can_square_count != 0):gosub *put_disk
+    return
+    *draw_board
+        redraw 0
+            i = 0
+            repeat 8
+                j = 0
+                repeat 8
+                    pos i * 100,j * 100
+                    switch board(i + 1,j + 1)
+                        case 0
+                            celput 100,,1.0,1.0
+                        swbreak
+                        case 1
+                            celput 101,,1.0,1.0
+                        swbreak
+                        case -1
+                            celput 99,,1.0,1.0
+                        swbreak
+                    swend
+                    j++
+                loop
+                i++
+            loop
+        redraw 1
+    return
+
+    *put_disk
+        putx = x:puty = y
+        if(turn == 1){
+            put_disk_pos(0,put_disk_num(0)) = x + y * 10
+            put_disk_num(0)++
+        }else{
+            put_disk_pos(1,put_disk_num(1)) = x + y * 10
+            put_disk_num(1)++
+        }
+        //??
+            k = 1
+            repeat
+                if(board(putx,puty - k) == turn){
+                    l = 0
+                    repeat k
+                        board(putx,puty - l) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx,puty - k) == 2 || board(putx,puty - k) == 0 || board(putx,puty - k) == 3){
+                    break
+                }
+                k++
+            loop
+        //?E??
+            k = 1
+            repeat
+                if(board(putx + k,puty - k) == turn){
+                    l = 0
+                    repeat k
+                        board(putx + l,puty - l) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx + k,puty - k) == 2 || board(putx + k,puty - k) == 0 || board(putx + k,puty - k) == 3){
+                    break
+                }
+                k++
+            loop
+        //?E
+            k = 1
+            repeat
+                if(board(putx + k,puty) == turn){
+                    l = 0
+                    repeat k
+                        board(putx + l,puty) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx + k,puty) == 2 || board(putx + k,puty) == 0 || board(putx + k,puty) == 3){
+                    break
+                }
+                k++
+            loop
+        //?E??
+            k = 1
+            repeat
+                if(board(putx + k,puty + k) == turn){
+                    l = 0
+                    repeat k
+                        board(putx + l,puty + l) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx + k,puty + k) == 2 || board(putx + k,puty + k) == 0 || board(putx + k,puty + k) == 3){
+                    break
+                }
+                k++
+            loop
+        //??
+            k = 1
+            repeat
+                if(board(putx,puty + k) == turn){
+                    l = 0
+                    repeat k
+                        board(putx,puty + l) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx,puty + k) == 2 || board(putx,puty + k) == 0 || board(putx,puty + k) == 3){
+                    break
+                }
+                k++
+            loop
+        //????
+            k = 1
+            repeat
+                if(board(putx - k,puty + k) == turn){
+                    l = 0
+                    repeat k
+                        board(putx - l,puty + l) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx - k,puty + k) == 2 || board(putx - k,puty + k) == 0 || board(putx - k,puty + k) == 3){
+                    break
+                }
+                k++
+            loop
+        //??
+            k = 1
+            repeat
+                if(board(putx - k,puty) == turn){
+                    l = 0
+                    repeat k
+                        board(putx - l,puty) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx - k,puty) == 2 || board(putx - k,puty) == 0 || board(putx - k,puty) == 3){
+                    break
+                }
+                k++
+            loop
+        //????
+            k = 1
+            repeat
+                if(board(putx - k,puty - k) == turn){
+                    l = 0
+                    repeat k
+                        board(putx - l,puty - l) = turn
+                        l++
+                    loop
+                    break
+                }else:if(board(putx - k,puty - k) == 2 || board(putx - k,puty - k) == 0 || board(putx - k,puty - k) == 3){
+                    break
+                }
+                k++
+            loop
+    return
+
+    *reset_board
+        i = 0
+        repeat 10:board(i,0) = 2:board(i,9) = 2:board(0,i) = 2:board(9,i) = 2:i++:loop
+        board(4,4) = -1:board(5,5) = -1:board(5,4) = 1:board(4,5) = 1
+        //?^?[????????
+            turn = 1//1:?? -1:??
+    return

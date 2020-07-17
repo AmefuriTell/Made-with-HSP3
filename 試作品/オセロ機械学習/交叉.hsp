@@ -1,0 +1,90 @@
+randomize
+#module _chiasma_
+    #deffunc make_first_genome array gene, int gene_num, int chromosome_num
+        //0 ~ chromesome_num
+            i = 0
+            repeat gene_num
+                j = 0
+                repeat chromosome_num
+                    gene(i, j) = j
+                    j++
+                loop
+                i++
+            loop
+        //ランダムシャッフル
+            i = 0
+            repeat gene_num
+                j = chromosome_num
+                repeat
+                    if(j > 1){
+                        a = j - 1 : b = rnd(j)
+                        tmp = gene(i, a) : gene(i, a) = gene(i, b) : gene(i, b) = tmp
+                    }else:break
+                    j--
+                loop
+                i++
+            loop
+    return
+    #deffunc chiasma array gene, array chromosome_pos, int gene_num, int chromosome_num
+        dim crossover_already, chromosome_num
+        dim child_gene, gene_num, chromosome_num
+
+        crossover_num = rnd(chromosome_num / 2) + 1
+        crossover_left = rnd(chromosome_num + 1 - crossover_num)
+        crossover_right = crossover_left - 1 + crossover_num
+        
+        i = 0:repeat gene_num:j = 0:repeat chromosome_num:child_gene(i, j) = gene(i, j):j++:loop:i++:loop
+
+        j = 0
+        repeat gene_num / 2
+            i = crossover_left
+            repeat
+                if(i <= crossover_right){
+                    if(crossover_already(child_gene(j * 2, i)) == 0 && crossover_already(child_gene(j * 2 + 1, i)) == 0){
+                        crossover_already(child_gene(j * 2, i)) == 1
+                        crossover_already(child_gene(j * 2 + 1, i)) == 1
+
+                        tmp = gene(j * 2, chromosome_pos(j * 2, child_gene(j * 2, i)))
+                        gene(j * 2, chromosome_pos(j * 2, child_gene(j * 2, i))) = gene(j * 2, chromosome_pos(j * 2, child_gene(j * 2 + 1, i)))
+                        gene(j * 2, chromosome_pos(j * 2, child_gene(j * 2 + 1, i))) = tmp
+
+                        tmp = gene(j * 2 + 1, chromosome_pos(j * 2 + 1, child_gene(j * 2, i)))
+                        gene(j * 2 + 1, chromosome_pos(j * 2 + 1, child_gene(j * 2, i))) = gene(j * 2 + 1, chromosome_pos(j * 2 + 1, child_gene(j * 2 + 1, i)))
+                        gene(j * 2 + 1, chromosome_pos(1, child_gene(j * 2 + 1, i))) = tmp
+                    }
+                }else:break
+                i++
+            loop
+            j++
+        loop
+
+        ;i = 0:repeat gene_num:pos 0, i * 10:j = 0:repeat chromosome_num:mes gene(i, j), 1:j++:loop:i++:loop
+    return
+    #deffunc chromosome_pos_check array gene, array chromosome_pos, int gene_num, int chromosome_num
+        i = 0
+        repeat gene_num
+            j = 0
+            repeat chromosome_num
+                chromosome_pos(i, gene(i, j)) = j
+                j++
+            loop
+            i++
+        loop
+    return
+#global
+
+chromosome_num = 64
+gene_num = 10
+dim gene, gene_num, chromosome_num
+dim chromosome_pos, gene_num, chromosome_num
+
+//初期遺伝子生成
+    make_first_genome gene, gene_num, chromosome_num
+    ;i = 0:repeat gene_num:pos 0, i * 24:j = 0:repeat chromosome_num:mes gene(i, j), 1:j++:loop:i++:loop
+    chromosome_pos_check gene, chromosome_pos, gene_num, chromosome_num
+    ;i = 0:repeat gene_num:pos 0, i * 24 + gene_num * 24:j = 0:repeat chromosome_num:mes chromosome_pos(i, j), 1:j++:loop:i++:loop
+
+//交叉
+    font "",12
+    chiasma gene, chromosome_pos, gene_num, chromosome_num
+

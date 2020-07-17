@@ -1,0 +1,23 @@
+#include "quicksort.hsp"
+file_name = "genome"
+notesel gene
+noteload "ŠwKŒ‹‰Ê/" + file_name + ".sco"
+
+dim score,64
+dim genome,64
+i = 0
+repeat notemax
+    noteget l,i
+    score(i) = int(l)
+    pos i \ 8 * 48, i / 8 * 48:mes score(i) / 1000
+    genome(i) = i + 1
+    i++
+loop
+qsortDec score,genome,0,63
+
+gene = ""
+notesel gene
+repeat 64
+    noteadd ""+genome(cnt)
+loop
+notesave "ŠwKŒ‹‰Ê/ƒQƒmƒ€/" + file_name + ".gen"
