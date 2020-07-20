@@ -1,0 +1,35 @@
+#module
+    #defcfunc min int a, int b
+        aa = a:bb = b;
+        if(aa < bb):return aa:else:return bb
+#global
+
+original_string = "sitting"
+original_string_len = strlen(original_string)
+buf_string = "i"
+buf_string_len = strlen(buf_string)
+
+dim dp,buf_string_len + 10, original_string_len + 10
+
+i = 0
+repeat original_string_len + 1
+    dp.0.i = i
+    i++
+loop
+i = 0
+repeat buf_string_len + 1
+    dp.i.0 = i
+    i++
+loop
+
+i = 1
+repeat buf_string_len
+    j = 1
+    repeat original_string_len
+        if(peek(original_string, j - 1) == peek(buf_string, i - 1)):cost = 0:else:cost = 1;
+        dp(i, j) = min(min(dp(i - 1, j) + 1, dp(i, j - 1) + 1), dp(i - 1, j - 1) + cost)
+        pos i * 16, j * 16 : mes dp(i, j)
+        j++
+    loop
+    i++
+loop
