@@ -44,5 +44,3 @@
         loop
     return dp(alen, blen)
 #global
-
-mes LevenshteinDistance("nintendo","sega")
