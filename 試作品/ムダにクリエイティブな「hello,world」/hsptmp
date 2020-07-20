@@ -9,7 +9,7 @@
         alen = strlen(aa)
         blen = strlen(bb)
 
-        mes aa + " " + bb + ":" + alen + " " + blen
+        mes "" + aa + " " + bb + ":" + alen + " " + blen
 
         dim dp, alen + 10, blen + 10
 
@@ -28,13 +28,14 @@
         repeat alen
             j = 1
             repeat blen
-                if(peek(aa, i - 1) == peek(bb, j - 1)){
+            	mes "" + aa + " " + bb + ":" + alen + " " + blen
+                if(1){
                     cost = 0
                 }else{
                     cost = 1
                 }
                 dp(i, j) = min(min(dp(i - 1, j) + 1, dp(i, j - 1) + 1), dp(i - 1, j - 1) + cost)
-                pos i * 16, j * 16 : mes dp(i, j)
+                //pos i * 16, j * 16 : mes dp(i, j)
                 j++
             loop
             i++
@@ -42,41 +43,4 @@
     return dp(alen, blen)
 #global
 
-//mes LevenshteinDistance("nintendo","sega")
-
-aa = "nintendo"
-bb = "sega"
-
-alen = strlen(aa)
-blen = strlen(bb)
-
-mes aa + " " + bb + ":" + alen + " " + blen
-
-dim dp, alen + 10, blen + 10
-
-i = 0
-repeat alen + 1
-    dp.i.0 = i
-    i++
-loop
-i = 0
-repeat blen + 1
-    dp.0.i = i
-    i++
-loop
-
-i = 1
-repeat alen
-    j = 1
-    repeat blen
-        if(peek(aa, i - 1) == peek(bb, j - 1)){
-            cost = 0
-        }else{
-            cost = 1
-        }
-        dp(i, j) = min(min(dp(i - 1, j) + 1, dp(i, j - 1) + 1), dp(i - 1, j - 1) + cost)
-        pos i * 16, j * 16 : mes dp(i, j)
-        j++
-    loop
-    i++
-loop
+mes LevenshteinDistance("nintendo","sega")
