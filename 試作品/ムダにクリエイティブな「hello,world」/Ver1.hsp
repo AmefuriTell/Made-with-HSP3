@@ -15,10 +15,12 @@
 randomize
 
 //変数初期化
-ans = "mes \"hello,world\""
+ans = "Genome"
 anslen = strlen(ans);
 genome_num = 100
+generation = 1000
 sdim genome, anslen, genome_num
+sdim new_gen, anslen, genome_num
 sdim score, genome_num
 i = 0
 repeat genome_num
@@ -35,17 +37,68 @@ repeat genome_num
         poke genome.i, j, rnd(95) + 32
         j++
     loop
-    score.i = LevenshteinDistance(genome.i, ans)
     //mes genome.i + " " + score.i
     i++
 loop
 
-sort_score score, genome
+likest_gen = genome(0)
+likest_score = score(0)
 
+repeat generation
+    //スコア計算
+    i = 0
+    repeat genome_num
+        score.i = LevenshteinDistance(genome.i, ans)
+        i++
+    loop
+    sort_score score, genome
+    //交叉
+        //元の上位10%は保存
+        i = 0
+        repeat genome_num * 0 / 100
+            new_gen.i = genome.i
+            i++
+        loop
+        //上位80%を交叉
+        j = 0
+        repeat genome_num * 60 / 100 / 2
+            new_gen.i = genome.j
+            new_gen(i + 1) = genome(j + 1)
+            iter = rnd(anslen)
+            k = 0
+            repeat iter
+                poke new_gen(i), k, peek(genome(j + 1), k)
+                poke new_gen(i + 1), k, peek(genome(j), k)
+                k++
+            loop
+            j += 2
+            i += 2
+        loop
+        //残り10%を突然変異させ、上位10%と交叉
+        repeat genome_num * 40 / 100
+            j = 0
+            repeat anslen
+                poke new_gen.i, j, rnd(95) + 32
+                j++
+            loop
+            iter = rnd(anslen)
+            k = 0
+            repeat iter
+                poke new_gen(i), k, peek(genome(j + 1), k)
+                poke new_gen(i + 1), k, peek(genome(j), k)
+                k++
+            loop
+            j += 2
+            i += 2
+        loop
+    cls
+    mes "" + score.0 + " " + genome.0
 
-//出力
-i = 0
-repeat genome_num
-    mes genome.i + " " + score.i
-    i++
+    //ゲノム転写
+    i = 0
+    repeat genome_num
+        mes genome.i + " " + new_gen.i
+        genome.i = new_gen.i
+        i++
+    loop
 loop
