@@ -60,11 +60,11 @@
 randomize
 
 screen 0, 600, 64
-title "Hello,World‚ğì‚è‚½‚¢"
+title "Hello,Worldã‚’ä½œã‚ŠãŸã„"
 gsel 0, 2
 wait 500
 
-//•Ï”‰Šú‰»
+//å¤‰æ•°åˆæœŸåŒ–
 ans = "01234567890123456789"
 anslen = strlen(ans);
 genome_num = 100
@@ -79,7 +79,7 @@ repeat genome_num
     i++
 loop
 
-//‰ŠúƒQƒmƒ€
+//åˆæœŸã‚²ãƒãƒ 
 i = 0
 repeat genome_num
     j = 0
@@ -96,7 +96,7 @@ likest_score = anslen
 
 font "", 32
 repeat
-    //ƒXƒRƒAŒvZ
+    //ã‚¹ã‚³ã‚¢è¨ˆç®—
     i = 0
     repeat genome_num
         score.i = LevenshteinDistance(genome.i, ans)
@@ -114,9 +114,9 @@ repeat
         mes genome.0 + " " + score.0
     redraw 1
     if(likest_gen == ans):wait:break
-    //Œğ³
+    //äº¤å‰
         i = 0
-        //ãˆÊ80%‚ğŒğ³
+        //ä¸Šä½80%ã‚’äº¤å‰
         repeat genome_num * 80 / 100 / 2
             new_gen(i) = genome(i)
             new_gen(i + 1) = genome(i + 1)
@@ -132,7 +132,7 @@ repeat
             loop
             i += 2
         loop
-        //c‚è10%‚ğ“Ë‘R•ÏˆÙ‚³‚¹AãˆÊ10%‚ÆŒğ³
+        //æ®‹ã‚Š10%ã‚’çªç„¶å¤‰ç•°ã•ã›ã€ä¸Šä½10%ã¨äº¤å‰
         k = 0
         repeat genome_num * 19 / 100 / 2
             new_gen(i) = genome(k)
@@ -155,7 +155,7 @@ repeat
             k++
             i += 2
         loop
-        //“Ë‘R•ÏˆÙ20%
+        //çªç„¶å¤‰ç•°20%
         repeat genome_num * 1 / 100 / 2
             new_gen(i) = likest_gen
             j = 0
@@ -179,7 +179,7 @@ repeat
             i += 2
         loop
     
-    //ƒQƒmƒ€“]Ê
+    //ã‚²ãƒãƒ è»¢å†™
     i = 0
     repeat genome_num
         //mes new_gen.i
