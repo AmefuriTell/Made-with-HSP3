@@ -1,0 +1,205 @@
+#module _min_max_
+    #defcfunc min int a, int b
+        aa = a:bb = b;
+        if(aa < bb):return aa:else:return bb
+    #defcfunc max int a, int b
+        aa = a:bb = b;
+        if(aa > bb):return aa:else:return bb
+#global
+#module _LevenshteinDistance_
+    #defcfunc LevenshteinDistance str a, str b
+        aa = a
+        bb = b
+        
+        alen = strlen(aa)
+        blen = strlen(bb)
+
+        dim dp, alen + 10, blen + 10
+
+        i = 0
+        repeat alen + 1
+            dp.i.0 = i
+            i++
+        loop
+        i = 0
+        repeat blen + 1
+            dp.0.i = i
+            i++
+        loop
+
+        i = 1
+        repeat alen
+            j = 1
+            repeat blen
+                if(peek(aa, i - 1) == peek(bb, j - 1)){
+                    cost = 0
+                }else{
+                    cost = 1
+                }
+                dp(i, j) = min(min(dp(i - 1, j) + 1, dp(i, j - 1) + 1), dp(i - 1, j - 1) + cost)
+                //pos i * 16, j * 16 : mes dp(i, j)
+                j++
+            loop
+            i++
+        loop
+    return dp(alen, blen)
+#global
+
+#define global swap(%1, %2) _wk = %1 : %1 = %2 : %2 = _wk
+#module
+#deffunc sort_score array dd, array na
+    repeat length(dd) - 1
+        d1 = cnt
+        repeat length(dd) - (d1 + 1), d1 + 1
+            if dd(d1) > dd(cnt) : swap dd(d1), dd(cnt) : swap na(d1), na(cnt)
+        loop
+    loop
+    return
+#global
+
+randomize
+
+screen 0, 288, 64
+title "Hello,World‚ðì‚è‚½‚¢"
+gsel 0, 2
+wait 500
+
+//•Ï”‰Šú‰»
+ans = "Hello,World!"
+anslen = strlen(ans);
+genome_num = 100
+generation = 10000
+sdim genome, anslen, genome_num
+sdim new_gen, anslen, genome_num
+sdim score, genome_num
+i = 0
+repeat genome_num
+    genome.i = ""
+    score.i = 0
+    i++
+loop
+
+//‰ŠúƒQƒmƒ€
+i = 0
+repeat genome_num
+    j = 0
+    repeat anslen
+        poke genome.i, j, rnd(95) + 32
+        j++
+    loop
+    //mes genome.i + " " + score.i
+    i++
+loop
+
+likest_gen = genome(0)
+likest_score = anslen
+
+font "", 32
+repeat
+    //ƒXƒRƒAŒvŽZ
+    i = 0
+    repeat genome_num
+        score.i = LevenshteinDistance(genome.i, ans)
+        i++
+    loop
+    sort_score score, genome
+    if(likest_score >= score.0){
+        likest_gen = genome.0
+        likest_score = score.0
+    }
+    
+    redraw 0
+        color 255,255,255:boxf:color 0,0,0:pos 0,0
+        mes "" + likest_gen + " " + likest_score
+        mes genome.0 + " " + score.0
+    redraw 1
+    if(likest_gen == ans):wait:break
+    //Œð³
+        i = 0
+        //ãˆÊ80%‚ðŒð³
+        repeat genome_num * 60 / 100 / 2
+            new_gen(i) = genome(i)
+            new_gen(i + 1) = genome(i + 1)
+            left = rnd(anslen) / 2
+            right = left + rnd(anslen) / 2
+            if(right >= anslen):right = anslen - 1
+            j = left
+            repeat
+                if(j >= right):break
+                poke new_gen(i), j, peek(genome(i + 1), j)
+                poke new_gen(i + 1), j, peek(genome(i), j)
+                j++
+            loop
+            i += 2
+        loop
+        //Žc‚è10%‚ð“Ë‘R•ÏˆÙ‚³‚¹AãˆÊ10%‚ÆŒð³
+        k = 0
+        repeat genome_num * 39 / 100 / 2
+            new_gen(i) = genome(k)
+            j = 0
+            repeat anslen
+                poke new_gen(i + 1), j, rnd(95) + 32
+                j++
+            loop
+            j = 0
+            left = rnd(anslen) / 2
+            right = left + rnd(anslen) / 2
+            if(right >= anslen):right = anslen - 1
+            j = left
+            repeat
+                if(j >= right):break
+                poke new_gen(i), j, peek(new_gen(i + 1), j)
+                poke new_gen(i + 1), j, peek(genome(k), j)
+                j++
+            loop
+            k++
+            i += 2
+        loop
+        //“Ë‘R•ÏˆÙ20%
+        repeat genome_num * 1 / 100 / 2
+            new_gen(i) = likest_gen
+            j = 0
+            repeat anslen
+                poke new_gen(i + 1), j, rnd(95) + 32
+                j++
+            loop
+            j = 0
+            j = 0
+            left = rnd(anslen) / 2
+            right = left + rnd(anslen) / 2
+            if(right >= anslen):right = anslen - 1
+            j = left
+            repeat
+                if(j >= right):break
+                poke new_gen(i), j, peek(new_gen(i + 1), j)
+                poke new_gen(i + 1), j, peek(genome(k), j)
+                j++
+            loop
+            k++
+            i += 2
+        loop
+    
+    //ƒQƒmƒ€“]ŽÊ
+    i = 0
+    repeat genome_num
+        //mes new_gen.i
+        genome.i = new_gen.i
+        i++
+    loop
+    if(cnt \ 100 == 0){
+        i = 0
+        repeat genome_num
+            j = 0
+            repeat anslen
+                poke genome.i, j, rnd(95) + 32
+                j++
+            loop
+            //mes genome.i + " " + score.i
+            i++
+        loop
+    }
+    await
+loop
+cls
+font "", 32
+pos 0,0:mes likest_gen
