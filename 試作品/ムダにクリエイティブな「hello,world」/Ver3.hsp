@@ -51,7 +51,7 @@ title "Hello,World‚ğì‚è‚½‚¢"
 gsel 0, 2
 
 //•Ï”‰Šú‰»
-ans = "qwertyuiopasdfghjklzxcvbnm"
+ans = "Hello,World‚ğì‚è‚½‚¢"
 anslen = strlen(ans);
 genome_num = 200
 generation = 10000
@@ -70,7 +70,7 @@ i = 0
 repeat genome_num
     j = 0
     repeat anslen
-        poke genome.i, j, rnd(95) + 32
+        poke genome.i, j, rnd(255) + 1
         j++
     loop
     //mes genome.i + " " + score.i
@@ -124,7 +124,7 @@ repeat
             new_gen(i) = genome(k)
             j = 0
             repeat anslen
-                poke new_gen(i + 1), j, rnd(95) + 32
+                poke new_gen(i + 1), j, rnd(255) + 1
                 j++
             loop
             j = 0
@@ -146,7 +146,7 @@ repeat
             new_gen(i) = likest_gen
             j = 0
             repeat anslen
-                poke new_gen(i + 1), j, rnd(95) + 32
+                poke new_gen(i + 1), j, rnd(255) + 1
                 j++
             loop
             j = 0
@@ -178,7 +178,7 @@ repeat
         if(buf == 0){
             j = 0
             repeat anslen
-                poke genome.i, j, rnd(95) + 32
+                poke genome.i, j, rnd(255) + 1
                 j++
             loop
             left = rnd(anslen)
