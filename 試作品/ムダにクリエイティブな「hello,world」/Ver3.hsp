@@ -1,73 +1,59 @@
-#module _min_max_
-    #defcfunc min int a, int b
-        aa = a:bb = b;
-        if(aa < bb):return aa:else:return bb
-    #defcfunc max int a, int b
-        aa = a:bb = b;
-        if(aa > bb):return aa:else:return bb
+#include "ƒŒ[ƒxƒ“ƒVƒ…ƒ^ƒCƒ“‹——£.hsp"
+
+#module _string_distance_
+    #defcfunc StringScore str p1, str p2
+        ret = strlen(p1);
+        s1 = p1 : s2 = p2;
+        repeat strlen(p1)
+            if(peek(s1, cnt) == peek(s2, cnt)):ret--
+        loop
+    return ret;
 #global
-#module _LevenshteinDistance_
-    #defcfunc LevenshteinDistance str a, str b
-        aa = a
-        bb = b
-        
-        alen = strlen(aa)
-        blen = strlen(bb)
-
-        dim dp, alen + 10, blen + 10
-
-        i = 0
-        repeat alen + 1
-            dp.i.0 = i
-            i++
+#module _string_
+    #defcfunc strcmp str p1, str p2
+        s1 = p1: s2 = p2
+        repeat
+            c1 = peek(s1,cnt)
+            c2 = peek(s2,cnt)
+            if (c1 ! c2) | c1=0: break
         loop
-        i = 0
-        repeat blen + 1
-            dp.0.i = i
-            i++
-        loop
-
-        i = 1
-        repeat alen
-            j = 1
-            repeat blen
-                if(peek(aa, i - 1) == peek(bb, j - 1)){
-                    cost = 0
-                }else{
-                    cost = 1
-                }
-                dp(i, j) = min(min(dp(i - 1, j) + 1, dp(i, j - 1) + 1), dp(i - 1, j - 1) + cost)
-                //pos i * 16, j * 16 : mes dp(i, j)
-                j++
-            loop
-            i++
-        loop
-    return dp(alen, blen)
+    return c1-c2
 #global
-
 #define global swap(%1, %2) _wk = %1 : %1 = %2 : %2 = _wk
-#module
-#deffunc sort_score array dd, array na
-    repeat length(dd) - 1
-        d1 = cnt
-        repeat length(dd) - (d1 + 1), d1 + 1
-            if dd(d1) > dd(cnt) : swap dd(d1), dd(cnt) : swap na(d1), na(cnt)
+#module _sort_
+    #deffunc sort_score array dd, array na
+        repeat length(dd) - 1
+            d1 = cnt
+            repeat length(dd) - (d1 + 1), d1 + 1
+                if dd(d1) > dd(cnt) : swap dd(d1), dd(cnt) : swap na(d1), na(cnt)
+            loop
         loop
-    loop
     return
+    #deffunc sort_string array string, array score
+        repeat length(string) - 1
+            d1 = cnt
+            repeat length(string) - (d1 + 1), d1 + 1
+                d2 = strcmp(string(d1), string(cnt));
+                if(d2 > 0){
+                    swap string(d1), string(cnt)
+                    swap score(d1), score(cnt)
+                }
+            loop
+        loop
+    return
+    
 #global
 
 randomize
 
-screen 0, 600, 64
-title "Hello,Worldã‚’ä½œã‚ŠãŸã„"
+screen 0, 600, 640
+title "Hello,World‚ðì‚è‚½‚¢"
 gsel 0, 2
-wait 500
 
-//å¤‰æ•°åˆæœŸåŒ–
-ans = "01234567890123456789"
+//•Ï”‰Šú‰»
+ans = "qwertyuiopasdfghjklzxcvbnm"
 anslen = strlen(ans);
-genome_num = 100
+genome_num = 200
 generation = 10000
 sdim genome, anslen, genome_num
 sdim new_gen, anslen, genome_num
@@ -79,7 +65,7 @@ repeat genome_num
     i++
 loop
 
-//åˆæœŸã‚²ãƒŽãƒ 
+//‰ŠúƒQƒmƒ€
 i = 0
 repeat genome_num
     j = 0
@@ -96,14 +82,14 @@ likest_score = anslen
 
 font "", 32
 repeat
-    //ã‚¹ã‚³ã‚¢è¨ˆç®—
+    //ƒXƒRƒAŒvŽZ
     i = 0
     repeat genome_num
-        score.i = LevenshteinDistance(genome.i, ans)
+        score.i = StringScore(genome.i, ans)
         i++
     loop
     sort_score score, genome
-    if(likest_score >= score.0){
+    if(likest_score > score.0){
         likest_gen = genome.0
         likest_score = score.0
     }
@@ -114,9 +100,9 @@ repeat
         mes genome.0 + " " + score.0
     redraw 1
     if(likest_gen == ans):wait:break
-    //äº¤å‰
+    //Œð³
         i = 0
-        //ä¸Šä½80%ã‚’äº¤å‰
+        //ãˆÊ80%‚ðŒð³
         repeat genome_num * 80 / 100 / 2
             new_gen(i) = genome(i)
             new_gen(i + 1) = genome(i + 1)
@@ -132,9 +118,9 @@ repeat
             loop
             i += 2
         loop
-        //æ®‹ã‚Š10%ã‚’çªç„¶å¤‰ç•°ã•ã›ã€ä¸Šä½10%ã¨äº¤å‰
+        //Žc‚è10%‚ð“Ë‘R•ÏˆÙ‚³‚¹AãˆÊ10%‚ÆŒð³
         k = 0
-        repeat genome_num * 19 / 100 / 2
+        repeat genome_num * 0 / 100 / 2
             new_gen(i) = genome(k)
             j = 0
             repeat anslen
@@ -155,15 +141,14 @@ repeat
             k++
             i += 2
         loop
-        //çªç„¶å¤‰ç•°20%
-        repeat genome_num * 1 / 100 / 2
+        //“Ë‘R•ÏˆÙ20%
+        repeat genome_num * 20 / 100 / 2
             new_gen(i) = likest_gen
             j = 0
             repeat anslen
                 poke new_gen(i + 1), j, rnd(95) + 32
                 j++
             loop
-            j = 0
             j = 0
             left = rnd(anslen)
             right = rnd(anslen)
@@ -179,25 +164,44 @@ repeat
             i += 2
         loop
     
-    //ã‚²ãƒŽãƒ è»¢å†™
+    //ƒQƒmƒ€“]ŽÊ
     i = 0
     repeat genome_num
-        //mes new_gen.i
+        //mes genome.i
         genome.i = new_gen.i
         i++
     loop
-    if(cnt \ 100 == 0){
-        i = 0
-        repeat genome_num
+    sort_string genome,score
+    i = 0
+    repeat genome_num - 1
+        buf = strcmp(genome(i), genome(i + 1))
+        if(buf == 0){
             j = 0
             repeat anslen
                 poke genome.i, j, rnd(95) + 32
                 j++
             loop
-            //mes genome.i + " " + score.i
+            left = rnd(anslen)
+            right = rnd(anslen)
+            if(left > right):tmp = left:left = right:right = tmp
+            j = left
+            repeat
+                if(j >= right):break
+                poke new_gen(i), j, peek(new_gen(i + 1), j)
+                poke new_gen(i + 1), j, peek(genome(k), j)
+                j++
+            loop
+        }
+        i++
+    loop
+
+    redraw 0
+        i = 0
+        repeat genome_num
+            genome.i = new_gen.i
             i++
         loop
-    }
+    redraw 1
     await
 loop
 cls
