@@ -1,2 +1,51 @@
 #include "レーベンシュタイン距離.hsp"
-ans = "hello,world"
+
+#define global swap(%1, %2) _wk = %1 : %1 = %2 : %2 = _wk
+#module
+#deffunc sort_score array dd, array na
+    repeat length(dd) - 1
+        d1 = cnt
+        repeat length(dd) - (d1 + 1), d1 + 1
+            if dd(d1) > dd(cnt) : swap dd(d1), dd(cnt) : swap na(d1), na(cnt)
+        loop
+    loop
+    return
+#global
+
+randomize
+
+//変数初期化
+ans = "mes \"hello,world\""
+anslen = strlen(ans);
+genome_num = 100
+sdim genome, anslen, genome_num
+sdim score, genome_num
+i = 0
+repeat genome_num
+    genome.i = ""
+    score.i = 0
+    i++
+loop
+
+//初期ゲノム
+i = 0
+repeat genome_num
+    j = 0
+    repeat anslen
+        poke genome.i, j, rnd(95) + 32
+        j++
+    loop
+    score.i = LevenshteinDistance(genome.i, ans)
+    //mes genome.i + " " + score.i
+    i++
+loop
+
+sort_score score, genome
+
+
+//出力
+i = 0
+repeat genome_num
+    mes genome.i + " " + score.i
+    i++
+loop
