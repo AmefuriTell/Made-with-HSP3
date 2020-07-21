@@ -117,11 +117,11 @@ repeat
     //Œğ³
         i = 0
         //ãˆÊ80%‚ğŒğ³
-        repeat genome_num * 60 / 100 / 2
+        repeat genome_num * 80 / 100 / 2
             new_gen(i) = genome(i)
             new_gen(i + 1) = genome(i + 1)
-            left = rnd(anslen) / 2
-            right = left + rnd(anslen) / 2
+            left = rnd(anslen)
+            right = left + rnd(anslen)
             if(right >= anslen):right = anslen - 1
             j = left
             repeat
@@ -134,7 +134,7 @@ repeat
         loop
         //c‚è10%‚ğ“Ë‘R•ÏˆÙ‚³‚¹AãˆÊ10%‚ÆŒğ³
         k = 0
-        repeat genome_num * 39 / 100 / 2
+        repeat genome_num * 19 / 100 / 2
             new_gen(i) = genome(k)
             j = 0
             repeat anslen
@@ -142,8 +142,8 @@ repeat
                 j++
             loop
             j = 0
-            left = rnd(anslen) / 2
-            right = left + rnd(anslen) / 2
+            left = rnd(anslen)
+            right = left + rnd(anslen)
             if(right >= anslen):right = anslen - 1
             j = left
             repeat
@@ -165,8 +165,8 @@ repeat
             loop
             j = 0
             j = 0
-            left = rnd(anslen) / 2
-            right = left + rnd(anslen) / 2
+            left = rnd(anslen)
+            right = left + rnd(anslen)
             if(right >= anslen):right = anslen - 1
             j = left
             repeat
