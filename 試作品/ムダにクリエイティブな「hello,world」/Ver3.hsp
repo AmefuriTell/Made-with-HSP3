@@ -51,9 +51,9 @@ title "Hello,Worldを作りたい"
 gsel 0, 2
 
 //変数初期化
-ans = "Hello,Worldを作りたい"
+ans = "う　し　た　ぷ　に　き　あ　く　ん　笑"
 anslen = strlen(ans);
-genome_num = 200
+genome_num = 100
 generation = 10000
 sdim genome, anslen, genome_num
 sdim new_gen, anslen, genome_num
@@ -70,7 +70,7 @@ i = 0
 repeat genome_num
     j = 0
     repeat anslen
-        poke genome.i, j, rnd(255) + 1
+        poke genome.i, j, " "
         j++
     loop
     //mes genome.i + " " + score.i
