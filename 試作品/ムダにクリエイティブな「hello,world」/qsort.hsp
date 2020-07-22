@@ -1,0 +1,41 @@
+// Quick Sort for HSP3 ... 数値型配列変数を昇順でソート
+#module QuickSortSample
+ 
+    // 配列変数の入れ替え target(i1) ⇔ target(i2)
+    #deffunc qsExchange array target, int i1, int i2, local tmp
+        tmp = target(i1) : target(i1) = target(i2) : target(i2) = tmp
+        return
+     
+    // 再帰用命令（内部利用）
+    #deffunc qsArgo array target, int startIndex, int endIndex, local std, local lastExchangedIndex
+        std = target(startIndex)                                // 基準値（簡単のために一番端の要素を選択）
+        lastExchangedIndex = startIndex                         // 最後に基準値より小さい値を格納した要素
+     
+        // 基準値よりも小さい値をひとまとまりにする
+        repeat endIndex - startIndex, startIndex + 1
+            if target(cnt) < std {                              // 降順にしたい場合はここを変更する
+                lastExchangedIndex++
+                qsExchange target, lastExchangedIndex, cnt
+            }
+        loop
+     
+        if startIndex < lastExchangedIndex {
+            // 基準値よりも小さい数値を格納した要素があった
+            qsExchange target, startIndex, lastExchangedIndex   // 基準値を正しい位置に移動
+     
+            if startIndex < lastExchangedIndex - 1 {
+                // 基準値よりも小さい値が複数ある場合、それらに対して再帰的にソートを実行
+                qsArgo target, startIndex, lastExchangedIndex - 1
+            }
+        }
+        if lastExchangedIndex < length(target) - 2 {
+            // 基準値よりも大きい値が複数ある場合、それらに対して再帰的にソートを実行
+            qsArgo target, lastExchangedIndex + 1, length(target) - 1
+        }
+        return
+     
+    #deffunc qSort array target
+        qsArgo target, 0, length(target) - 1
+        return
+     
+    #global

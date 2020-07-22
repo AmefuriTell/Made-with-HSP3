@@ -1,0 +1,57 @@
+#module _GA_
+    #defcfunc ScoreCalc array ans, array gen, int len
+        ret = 0;
+        i = 0
+        repeat len
+            if(ans(i) != gen(i)):ret++
+            i++
+        loop
+    return ret
+    #deffunc SortScore array score, array gen, int gen_num
+        //選択ソート
+
+    return
+#global
+
+
+len = 10
+gen_num = 100
+dim ans, len
+dim gen, gen_num, len
+dim score, gen_num
+//初期化
+    //1111にする
+        i = 0
+        repeat len
+            ans(i) = 1
+            i++
+        loop
+    //0000に変更
+        i = 0
+        repeat gen_num
+            j = 0
+            repeat len
+                gen(i, j) = 0
+                j++
+            loop
+            i++
+        loop
+    //スコア初期化
+        i = 0
+        repeat gen_num
+            score(i) = 0
+            i++
+        loop
+//メイン
+    repeat
+        //スコア計算
+            i = 0
+            repeat gen_num
+                score(i) = ScoreCalc(ans, gen(i), len)
+                i++
+            loop
+        //ソート
+        SortScore score, gen, gen_num
+        //交叉~次世代引継ぎ
+        await
+    loop
