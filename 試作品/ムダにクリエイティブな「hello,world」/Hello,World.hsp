@@ -1,0 +1,124 @@
+#include "レーベンシュタイン距離.hsp"
+#module _GA_
+    #defcfunc ScoreCalc array ans, array gen, int len
+        ret = 0
+        i = 0
+        repeat len
+            if(peek(gen, i) == peek(ans, i)):ret++;
+            i++
+        loop
+    return ret
+    #deffunc SortScore array score, array gen, int gen_num, int len
+        //選択ソート
+            i = 0
+            repeat gen_num - 1
+                maxi = i
+                j = i + 1
+                repeat
+                    if(j >= gen_num):break;
+                    if(score(j) <= score(maxi)):maxi = j; 
+                    j++
+                loop
+                tmp = score(i):score(i) = score(maxi):score(maxi) = tmp
+                tmp = gen(i):gen(i) = gen(maxi):gen(maxi) = tmp
+                i++
+            loop
+    return
+#global
+
+randomize
+screen 0, 160 * 5, 100, 0, 0, 0
+wait 200
+
+len = 100
+gen_num = 100
+ans = "Hello, World!"
+len = strlen(ans)
+sdim gen, len, gen_num
+sdim child_gen, len, gen_num
+dim score, gen_num
+//初期化
+    //答え生成
+    //初期遺伝子生成
+        i = 0
+        repeat gen_num
+            j = 0
+            repeat len
+                poke gen(i), j, rnd(256)
+                j++
+            loop
+            i++
+        loop
+    //スコア初期化
+        i = 0
+        repeat gen_num
+            score(i) = 0
+            i++
+        loop
+//メイン
+    font "M1", 100
+    repeat
+        //スコア計算//個体評価
+            i = 0
+            repeat gen_num
+                score(i) = int(LevenshteinDistance(ans, gen(i))) + int(ScoreCalc(ans, gen(i), len))
+                i++
+            loop
+        //ソート後の遺伝子
+            ;pos ,0:i = 0:repeat gen_num:pos 100, :j = 0:repeat len:mes gen(i, j), 1:j++:loop:mes " " + score(i):i++:loop
+        //ソート
+            SortScore score, gen, gen_num, len
+        //ソート後の遺伝子
+            redraw 0
+                color 255, 255, 255:boxf:color 0,0,0:pos ,0
+                i = 0
+                repeat 1
+                    pos 0, 
+                    mes gen(i)
+                    i++
+                loop
+            redraw 1
+        //交叉 + 突然変異
+            //親を半分保存
+                i = 0
+                repeat gen_num / 2
+                    child_gen(i) = gen(i)
+                    i++
+                loop
+            //子を生成
+                k = 0
+                repeat
+                    //子を二点交叉で生成
+                        if(i + 1 >= gen_num):break
+                        child_gen(i) = gen(i)
+                        child_gen(i + 1) = gen(i + 1)
+
+                        left = rnd(len):right = rnd(len)
+                        if(left > right):tmp = left:left = right:right = tmp
+                        j = left
+                        repeat
+                            if(j > right):break
+                            poke child_gen(i), j, peek(gen(k + 1), j)
+                            poke child_gen(i + 1), j, peek(gen(k), j)
+                            j++
+                        loop
+                    //突然変異
+                        j = 0
+                        repeat len
+                            p = rnd(len)
+                            if(p == 0){
+                                poke child_gen(i), j, rnd(256)
+                            }
+                            j++
+                        loop
+                    i += 2
+                    k += 2
+                loop
+        //世代交代
+            i = 0
+            repeat gen_num
+                gen(i) = child_gen(i)
+                i++
+            loop
+        await
+    loop
