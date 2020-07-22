@@ -1,37 +1,55 @@
 #module _GA_
-    #defcfunc ScoreCalc array ans, array gen, int len
-        ret = 0;
+    #defcfunc ScoreCalc array ans, array gen, int iter, int len
+        ret = 0
         i = 0
         repeat len
-            if(ans(i) != gen(i)):ret++
+            if(gen(iter, i) == ans(i)):ret++;
             i++
         loop
     return ret
-    #deffunc SortScore array score, array gen, int gen_num
+    #deffunc SortScore array score, array gen, int gen_num, int len
         //選択ソート
-
+            i = 0
+            repeat gen_num - 1
+                min = i
+                j = i + 1
+                repeat
+                    if(j >= gen_num):break;
+                    if(score(j) > score(min)):min = j; 
+                    j++
+                loop
+                tmp = score(i):score(i) = score(min):score(min) = tmp
+                j = 0
+                repeat len
+                    tmp = gen(i, j):gen(i, j) = gen(min, j):gen(min, j) = tmp
+                    j++
+                loop
+                i++
+            loop
     return
 #global
 
+randomize
 
-len = 10
+len = 72
 gen_num = 100
 dim ans, len
 dim gen, gen_num, len
+dim child_gen, gen_num, len
 dim score, gen_num
 //初期化
-    //1111にする
+    //答え生成
         i = 0
         repeat len
             ans(i) = 1
             i++
         loop
-    //0000に変更
+    //初期遺伝子生成
         i = 0
         repeat gen_num
             j = 0
             repeat len
-                gen(i, j) = 0
+                gen(i, j) = rnd(2)
                 j++
             loop
             i++
@@ -44,14 +62,73 @@ dim score, gen_num
         loop
 //メイン
     repeat
-        //スコア計算
+        //スコア計算//個体評価
             i = 0
             repeat gen_num
-                score(i) = ScoreCalc(ans, gen(i), len)
+                score(i) = ScoreCalc(ans, gen, i, len)
                 i++
             loop
+        //ソート後の遺伝子
+            ;pos ,0:i = 0:repeat gen_num:pos 100, :j = 0:repeat len:mes gen(i, j), 1:j++:loop:mes " " + score(i):i++:loop
         //ソート
-        SortScore score, gen, gen_num
-        //交叉~次世代引継ぎ
+            SortScore score, gen, gen_num, len
+        //ソート後の遺伝子
+            redraw 0
+                color 255, 255, 255:boxf:color 0,0,0
+                pos ,0:i = 0:repeat gen_num:pos 0, :j = 0:repeat len:mes gen(i, j), 1:j++:loop:mes " " + score(i):i++:loop
+            redraw 1
+        //交叉 + 突然変異
+            //親を半分保存
+                i = 0
+                repeat gen_num / 2
+                    j = 0
+                    repeat len
+                        child_gen(i, j) = gen(i, j)
+                        j++
+                    loop
+                    i++
+                loop
+            //子を生成
+                k = 0
+                repeat
+                    //子を二点交叉で生成
+                        if(i + 1 >= gen_num):break
+                        j = 0
+                        repeat len
+                            child_gen(i, j) = gen(i, j)
+                            child_gen(i + 1, j) = gen(i + 1, j)
+                            j++
+                        loop
+                        left = rnd(len):right = rnd(len)
+                        if(left > right):tmp = left:left = right:right = tmp
+                        j = left
+                        repeat
+                            if(j > right):break
+                            child_gen(i, j) = gen(k + 1, j)
+                            child_gen(i + 1, j) = gen(k, j)
+                            j++
+                        loop
+                    //突然変異
+                        j = 0
+                        repeat len
+                            p = rnd(len)
+                            if(p == 0){
+                                if(child_gen(i, j) == 0):child_gen(i, j) = 1:else:child_gen(i, j) = 0
+                            }
+                            j++
+                        loop
+                    i += 2
+                    k += 2
+                loop
+        //世代交代
+            i = 0
+            repeat gen_num
+                j = 0
+                repeat len
+                    gen(i, j) = child_gen(i, j)
+                    j++
+                loop
+                i++
+            loop
         await
     loop
