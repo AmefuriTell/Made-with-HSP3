@@ -4,7 +4,7 @@
         ret = 0
         i = 0
         repeat len
-            if(peek(gen, i) == peek(ans, i)):ret++;
+            if(peek(gen, i) != peek(ans, i)):ret++;
             i++
         loop
     return ret
@@ -16,7 +16,7 @@
                 j = i + 1
                 repeat
                     if(j >= gen_num):break;
-                    if(score(j) <= score(maxi)):maxi = j; 
+                    if(score(j) < score(maxi)):maxi = j; 
                     j++
                 loop
                 tmp = score(i):score(i) = score(maxi):score(maxi) = tmp
@@ -27,12 +27,11 @@
 #global
 
 randomize
-screen 0, 800, 600, 0, 0, 0
-wait 500
+screen 0, 800, 1000, 0, 0, 0
 
-len = 100
-gen_num = 100
-ans = "Hello, World!"
+
+gen_num = 400
+ans = "おはよう、世界！"
 len = strlen(ans)
 sdim gen, len, gen_num
 sdim child_gen, len, gen_num
@@ -56,7 +55,7 @@ dim score, gen_num
             i++
         loop
 //メイン
-    font "", 100
+    font "", 16
     repeat
         //スコア計算//個体評価
             i = 0
@@ -72,9 +71,9 @@ dim score, gen_num
             redraw 0
                 color 255, 255, 255:boxf:color 0,0,0:pos ,0
                 i = 0
-                repeat 1
+                repeat gen_num
                     pos 0, 
-                    mes gen(i)
+                    mes gen(i) + " " + score(i)
                     i++
                 loop
             redraw 1
@@ -90,8 +89,8 @@ dim score, gen_num
                 repeat
                     //子を二点交叉で生成
                         if(i + 1 >= gen_num):break
-                        child_gen(i) = gen(i)
-                        child_gen(i + 1) = gen(i + 1)
+                        child_gen(i) = gen(k)
+                        child_gen(i + 1) = gen(k + 1)
 
                         left = rnd(len):right = rnd(len)
                         if(left > right):tmp = left:left = right:right = tmp
@@ -108,6 +107,14 @@ dim score, gen_num
                             p = rnd(len)
                             if(p == 0){
                                 poke child_gen(i), j, rnd(256)
+                            }
+                            j++
+                        loop
+                        j = 0
+                        repeat len
+                            p = rnd(len)
+                            if(p == 0){
+                                poke child_gen(i + 1), j, rnd(256)
                             }
                             j++
                         loop
