@@ -1,0 +1,190 @@
+#include "レーベンシュタイン距離.hsp"
+#module _GA_
+    #defcfunc ScoreCalc str ans, str gen
+        anslen = strlen(ans) : genlen = strlen(gen)
+        ret = 0
+
+        ret += (max(anslen, genlen) - min(anslen, genlen)) * 10
+        
+        aa = ans : gg = gen
+        ret += max(anslen, genlen) * 2
+        i = 0
+        repeat min(anslen, genlen)
+            if(peek(aa, i) == peek(gg, i)):ret--
+            i++
+        loop
+        i = min(anslen, genlen) - 1
+        repeat min(anslen, genlen)
+            if(peek(aa, i) == peek(gg, i)):ret--
+            i--
+        loop
+    return ret
+    #deffunc SortScore array score, array gen, int gen_num, int len
+        //選択ソート
+            i = 0
+            repeat gen_num - 1
+                maxi = i
+                j = i + 1
+                repeat
+                    if(j >= gen_num):break;
+                    if(score(j) < score(maxi)):maxi = j; 
+                    j++
+                loop
+                tmp = score(i):score(i) = score(maxi):score(maxi) = tmp
+                tmp = gen(i):gen(i) = gen(maxi):gen(maxi) = tmp
+                i++
+            loop
+    return
+#global
+
+randomize
+screen 0, 800, 1000, 0, 0, 0
+wait 500
+
+//変数初期化
+    gen_num = 512
+    ans = "Hello,World!"
+    len = strlen(ans)
+    sdim gen, 1000, gen_num
+    sdim child_gen, 1000, gen_num
+    dim score, gen_num
+    dim genlen, gen_num
+    //答え生成
+    //初期遺伝子生成
+        i = 0
+        repeat gen_num
+            gen(i) = ""
+            i++
+        loop
+    //スコア初期化
+        i = 0
+        repeat gen_num
+            score(i) = 0
+            i++
+        loop
+//メイン
+    font "", 24
+    repeat
+        //スコア計算//個体評価
+            i = 0
+            repeat gen_num
+                score(i) = int(LevenshteinDistance(ans, gen(i))) + int(ScoreCalc(ans, gen(i)))
+                genlen(i) = strlen(gen(i))
+                i++
+            loop
+        //ソート
+            SortScore score, gen, gen_num, len 
+        //描画
+            redraw 0
+                color 255, 255, 255:boxf:color 0,0,0:pos ,0
+                i = 0
+                repeat gen_num
+                    pos 0, 
+                    mes gen(i) + " " + score(i)
+                    i++
+                loop
+            redraw 1
+        //完了してたら、break
+            if(gen(0) == ans):wait:break   
+        //交叉
+            parents_num = min(gen_num / 2, 1000)
+            childlen_num = gen_num - parents_num
+            //親を半分保存
+                i = 0
+                repeat parents_num
+                    child_gen(i) = gen(i)
+                    i++
+                loop
+            //子を生成
+                k = 0
+                repeat childlen_num / 2
+                    //子を二点交叉で生成
+                        child_gen(i) = gen(k)
+                        child_gen(i + 1) = gen(k + 1)
+                        if(genlen(i) == genlen(i + 1)){//遺伝子長が同じとき
+                            if(genlen(i) != 0){
+                                left = rnd(genlen(i)):right = rnd(genlen(i))
+                                if(left > right):tmp = left:left = right:right = tmp
+                                j = left
+                                repeat
+                                    if(j > right):break
+                                    poke child_gen(i), j, peek(gen(k + 1), j)
+                                    poke child_gen(i + 1), j, peek(gen(k), j)
+                                    j++
+                                loop
+                            }
+                        }else{//遺伝子長が違うとき
+                            if(genlen(i) != 0 && genlen(i + 1) != 0){//ゼロじゃないときは大丈夫
+                                if(genlen(i) > genlen(i + 1)){//genlen(i + 1)のほうが長くなるように
+                                    tmp = child_gen(i) : child_gen(i) = child_gen(i + 1) : child_gen(i + 1) = tmp
+                                    tmp = genlen(i) : genlen(i) = genlen(i + 1) : genlen(i + 1) = tmp
+                                    tmp = gen(i) : gen(i) = gen(i + 1) : gen(i + 1) = tmp
+                                }
+                                left = rnd(genlen(i)):right = rnd(genlen(i)):iter = rnd(genlen(i + 1) - genlen(i))
+                                if(left > right):tmp = left:left = right:right = tmp
+                                j = left
+                                repeat
+                                    if(j > right):break
+                                    poke child_gen(i), j, peek(gen(k + 1), j + iter)
+                                    poke child_gen(i + 1), j + iter, peek(gen(k), j)
+                                    j++
+                                loop
+                            }
+                        }
+                    i += 2
+                    k += 2
+                loop
+        //突然変異
+                i = parents_num
+                repeat childlen_num
+                    //変更
+                        j = 0
+                        repeat genlen(i)
+                            p = rnd(genlen(i))
+                            if(p == 0){
+                                poke child_gen(i), j, rnd(256)
+                            }
+                            j++
+                        loop
+                    //削除
+                        buf = child_gen(i)
+                        child_gen(i) = ""
+                        j = 0
+                        repeat genlen(i)
+                            p = rnd(genlen(i))
+                            if(p != 0){
+                                child_gen(i) += strf("%c", peek(buf, j))
+                            }
+                            j++
+                        loop
+                    //追加
+                        buf = child_gen(i)
+                        child_gen(i) = ""
+                        j = 0
+                        p = rnd(genlen(i) + 1)
+                        if(p == 0){
+                            child_gen(i) += strf("%c", rnd(256))
+                        }
+                        repeat genlen(i)
+                            child_gen(i) += strf("%c", peek(buf, j))
+                            p = rnd(genlen(i) + 1)
+                            if(p == 0){
+                                child_gen(i) += strf("%c", rnd(256))
+                            }
+                            j++
+                        loop
+                    i++
+                loop
+        //世代交代
+            i = 0
+            repeat gen_num
+                gen(i) = child_gen(i)
+                i++
+            loop
+        await
+    loop
+
+    cls
+    font "", 32
+    mes "完了！"
+    mes gen(0)
