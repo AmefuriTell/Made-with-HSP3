@@ -1,0 +1,106 @@
+#packopt name "キャプチャソフト"
+#packopt icon "163140.ico"
+#packopt upx 0
+#packopt hide 0
+
+#pack "1.png"
+#pack "hspycp.dll"
+#pack "first.bat"
+#pack "finish.bat"
+#pack "start.bat"
+#pack "end.bat"
+#pack "ycapture.ini"
+#pack "ycapture.dll"
+
+#include "user32.as"
+#ifndef SetProcessDPIAware
+#uselib "user32"
+#func SetProcessDPIAware "SetProcessDPIAware"
+#endif
+
+#uselib "shcore"
+#func SetProcessDpiAwareness "SetProcessDpiAwareness" int
+#func GetScaleFactorForMonitor "GetScaleFactorForMonitor" int, int
+
+if varptr(SetProcessDpiAwareness) {
+	SetProcessDpiAwareness 2
+} else : if varptr(SetProcessDPIAware) {
+	SetProcessDPIAware
+}
+
+dx = ginfo_dispx : dy = ginfo_dispy
+
+#module _screenshot_
+	#uselib "gdi32.dll"
+	#cfunc CreateDC "CreateDCA" sptr,sptr,sptr,int
+	#func DeleteDC "DeleteDC"  int
+	#func BitBlt "BitBlt" int,int,int,int,int,int,int,int,int
+	
+	#include "user32.as"
+	#define NULL        0
+	#define SRCCOPY     0x00CC0020
+	#define CAPTUREBLT  0x40000000
+
+	#deffunc get_screenshot int x1, int y1, int x2, int y2
+		hdcScreen = CreateDC("DISPLAY", NULL, NULL, NULL)
+		BitBlt hdc, x1, y1, x2, y2, hdcScreen, 0, 0, SRCCOPY
+		DeleteDC hdcScreen
+	return
+#global
+#include "constant.as"
+#include "hspycp.as"
+
+//最初にdllを展開
+exist dir_cur + "/hspycp.dll"
+if(strsize == -1) : bcopy "hspycp.dll", dir_cur + "/hspycp.dll"
+exist dir_cur + "/first.bat"
+if(strsize == -1) : bcopy "first.bat", dir_cur + "/first.bat"
+exist dir_cur + "/finish.bat"
+if(strsize == -1) : bcopy "finish.bat", dir_cur + "/finish.bat"
+exist dir_cur + "/start.bat"
+if(strsize == -1) : bcopy "start.bat", dir_cur + "/start.bat"
+exist dir_cur + "/end.bat"
+if(strsize == -1) : bcopy "end.bat", dir_cur + "/end.bat"
+exist dir_cur + "/ycapture.ini"
+if(strsize == -1) : bcopy "ycapture.ini", dir_cur + "/ycapture.ini"
+exist dir_cur + "/ycapture.dll"
+if(strsize == -1) : bcopy "ycapture.dll", dir_cur + "/ycapture.dll"
+
+onexit gosub *dec
+*start
+
+exec "first.bat"
+
+buffer 1, dx, dy
+gsel 0
+screen 0, 1920, 1080, 0, 0, 0
+
+ycp_Open "HSPDSC_CaptureSource_Data", "HSPDSC_CaptureSource_Write", "HSPDSC_CaptureSource_Read"
+devId = stat
+mref vram, 66
+title "discord用画面キャプチャソフト"
+celload "1.png",100
+gsel 0, 0
+dim Cursorinfo,5
+color 255,0,0
+gmode 4,,,256
+width 320, 64
+font "", 32
+repeat
+	redraw 0
+        gsel 1 : pos 0,0:get_screenshot 0, 0, dx, dy : pos ginfo_mx,ginfo_my : color 255, 0 ,0 : celput 100,,1.0,1.0 : gsel 0
+        pos 0, 0 : celput 1,,1920.0 / double(dx),1920.0 / double(dx)
+		
+		ycp_Send devId, cnt, 60, dx, dy, vram
+		color 255 , 255, 255 : boxf
+		color 0, 0, 0 : pos 80, 16 : mes "画面表示中"
+	redraw 1
+	await 1000 / 60
+loop
+*dec
+dialog "終了しますか？", 2
+if(stat == 7) : return
+dialog "配信中のカメラを切ってください", 0
+ycp_Close devId
+exec "finish.bat"
+end

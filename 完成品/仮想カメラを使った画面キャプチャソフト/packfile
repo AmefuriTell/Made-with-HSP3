@@ -1,0 +1,16 @@
+;
+;	source generated packfile
+;
+;!name=キャプチャソフト
+;!icon=163140.ico
+;!upx=0
+;!hide=0
+1.png
+hspycp.dll
+first.bat
+finish.bat
+start.bat
+end.bat
+ycapture.ini
+ycapture.dll
++start.ax
