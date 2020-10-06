@@ -1,6 +1,0 @@
-notesel note
-repeat 64
-    noteadd "" + cnt
-loop
-notesave "ŠwKŒ‹‰Ê/ƒQƒmƒ€/genome.gen"
-end
