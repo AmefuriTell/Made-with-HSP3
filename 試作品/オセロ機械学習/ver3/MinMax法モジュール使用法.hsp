@@ -1,0 +1,42 @@
+#include "MinMaxñ@ÉÇÉWÉÖÅ[Éã.hsp"
+randomize
+screen 0,100 * 8, 100 * 8
+
+dim ScoreBoard, 10, 10
+
+repeat
+    ClearField field
+    turn = 1
+    CheckField field, IPDW, WCP, turn
+    PutDiskPos = MinMax_3(field, turn, ScoreBord)
+
+    i = 0
+    repeat 10
+        j = 0
+        repeat 10
+            ScoreBord.i.j = rnd(101) - 50
+            j++
+        loop
+        i++
+    loop
+
+    repeat
+        if(turn == 1){
+            if(WCP(0) == 0) : break
+            PutDisk field, IPDW, WCP, PutDiskPos \ 10, PutDiskPos / 10, turn
+        }else{
+            if(WCP(0) == 0) : break
+            PutNum = rnd(WCP(0)) + 1
+            PutDisk field, IPDW, WCP, WCP(PutNum) \ 10, WCP(PutNum) / 10, turn
+        }
+        turn *= -1
+        repeat 2
+            CheckField field, IPDW, WCP, turn
+            PutDiskPos = MinMax_3(field, turn, ScoreBord)
+            if(WCP(0) != 0) : break
+            turn *= -1
+        loop
+        await 
+        DrawField field
+    loop
+loop

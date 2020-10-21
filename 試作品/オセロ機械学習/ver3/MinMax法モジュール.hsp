@@ -1,0 +1,114 @@
+#include "オセロモジュール.hsp"
+#module _minimax_
+    #defcfunc MakeNextField array Field, array NextField, array WherePutDisk, int turn, int FirstID, local i, local j
+        dim dx, 8 : dx = 0, 1, 1, 1, 0, -1, -1, -1
+        dim dy, 8 : dy = -1, -1, 0, 1, 1, 1, 0, -1
+
+        dim IPDW, 10, 10, 8
+        dim WCP, 64
+        WCP.0 = 0
+
+        id = FirstID
+        x = 1
+        repeat 8
+            y = 1
+            repeat 8
+                if(Field(x, y) == 0){
+                    i = 0
+                    repeat 8
+                        IPDW(x, y, i) = 0
+                        i++
+                    loop
+
+                    flag = 0
+                    i = 0
+                    repeat 8
+                        if(Field(x + dx(i), y + dy(i)) == -turn){
+                            j = 1
+                            repeat
+                                if(Field(x + dx(i) * j, y + dy(i) * j) == turn){
+                                    flag = 1
+                                    IPDW(x, y, i) = j
+                                    break
+                                }else : if(Field(x + dx(i) * j, y + dy(i) * j) != -turn){
+                                    break
+                                }
+                                j++
+                            loop
+                        }
+                        i++
+                    loop
+                    if(flag == 1){
+                        i = 0
+                        repeat 10
+                            j = 0
+                            repeat 10
+                                NextField(id, i, j) = Field(i, j)
+                                j++
+                            loop
+                            i++
+                        loop
+                        i = 0
+                        repeat 8
+                            j = 0
+                            repeat IPDW(x, y, i)
+                                NextField(id, x + dx.i * j, y + dy.i * j) = turn
+                                j++
+                            loop
+                            i++
+                        loop
+                        WherePutDisk(id) = y * 10 + x
+                        id++
+                    }
+                }
+                y++
+            loop
+            x++
+        loop
+
+    return id - FirstID
+
+    #defcfunc MinMax_3 array field, int turn, array ScoreBoard, local i, local j, local k
+        dim NextField, 300000, 10, 10
+        dim WPD, 300000
+        dim ArgField, 10, 10
+        dim Score, 3
+        count  = 0
+        ND1 = MakeNextField(field, NextField, WPD, turn, 0)
+        Score(0) = 2147483647
+        i = 0
+        repeat ND1
+            x = 0:repeat 10:y = 0:repeat 10:ArgField.x.y = NextField.i.x.y:y++:loop:x++:loop
+            ND2 = MakeNextField(ArgField, NextField, WPD, -turn, ND1)
+            Score(1) = -2147483647
+            j = 0
+            repeat ND2
+                x = 0:repeat 10:y = 0:repeat 10:ArgField.x.y = NextField.(ND1 + j).x.y:y++:loop:x++:loop
+                ND3 = MakeNextField(ArgField, NextField, WPD, turn, ND1 + ND2)
+                Score(2) = -2147483648
+                k = 0
+                repeat ND3
+                    //x = 0:repeat 10:y = 0:repeat 10:ArgField.x.y = NextField.(ND1 + ND2 + k).x.y:y++:loop:x++:loop:screen ginfo_newid, 800, 800:DrawField ArgField:title "" + WPD(ND1 + ND2 + k)
+                    //ここで源泉のスコアを持ってくる。
+                    if(Score(2) < ScoreBoard(WPD(ND1 + ND2 + k))){
+                        Score(2) = ScoreBoard(WPD(ND1 + ND2 + k))
+                    }
+                    k++
+                loop
+                //ND3のスコアの最大値を持ってきて、ND2のスコアに入れる
+                if(Score(1) < Score(2)){
+                    Score(1) = Score(2)
+                }
+                j++
+            loop
+            //ND2のスコアの最小値を持ってきて、ND1のスコアに入れる
+            if(Score(0) > Score(1)){
+                Score(0) = Score(1)
+                
+                PutDiskPos = WPD(i)
+            }
+            i++
+        loop
+        //ND1のスコアの最大値を持ってきて、どこに置いたのかを調べる
+    return PutDiskPos
+#global

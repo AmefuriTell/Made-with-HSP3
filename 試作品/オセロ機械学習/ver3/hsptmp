@@ -1,0 +1,210 @@
+#packopt name "オセロ学習 ver3.2.exe"
+
+
+#include "MinMax法モジュール.hsp"
+#include "GAモジュール.hsp"
+randomize
+screen 0,100 * 8, 100 * 8
+title "3.2"
+
+//変数初期化
+    len = 100
+    biont_num = 10
+    generation_num = 0
+
+    dim ScoreBoardBlack, biont_num, len
+    dim NewScoreBoardBlack, biont_num, len
+    dim ScoreBoardWhite, biont_num, len
+    dim NewScoreBoardWhite, biont_num, len
+    
+    dim ArgBoardBlack, len
+    dim ArgBoardWhite, len
+    dim ScoreBlack, biont_num
+    dim ScoreWhite, biont_num
+
+    //初期遺伝子生成
+    i = 0
+    repeat biont_num
+        j = 0
+        repeat len
+            ScoreBoardBlack.i.j = rnd(101) - 50
+            ScoreBoardWhite.i.j = rnd(101) - 50
+            j++
+        loop
+        i++
+    loop
+
+//メイン
+repeat
+    i = 0
+    repeat biont_num
+        ScoreBlack = 0
+        ScoreWhite = 0
+        i++
+    loop
+    //対戦させる
+        i = 0
+        repeat biont_num
+            j = 0
+            repeat biont_num
+                k = 0:repeat len:ArgBoardBlack.k = ScoreBoardBlack.i.k:k++:loop
+                k = 0:repeat len:ArgBoardWhite.k = ScoreBoardWhite.j.k:k++:loop
+                ClearField field
+                turn = 1
+                CheckField field, IPDW, WCP, turn
+                PutDiskPos = MinMax_3(field, turn, ArgBoardBlack)
+                repeat
+                    if(WCP(0) == 0) : break
+                    PutDisk field, IPDW, WCP, PutDiskPos \ 10, PutDiskPos / 10, turn
+                    turn *= -1
+                    repeat 2
+                        CheckField field, IPDW, WCP, turn
+                        if(turn == 1) : PutDiskPos = MinMax_3(field, turn, ArgBoardBlack) : else : PutDiskPos = MinMax_3(field, turn, ArgBoardWhite)
+                        if(WCP(0) != 0) : break
+                        turn *= -1
+                    loop
+                    await 
+                    
+                loop
+                DrawField field
+                black_num = 0
+                white_num = 0
+                k = 1
+                repeat 8
+                    l = 1
+                    repeat 8
+                        if(field.k.l == 1) : black_num++ : else : if(field.k.l == -1) : white_num++;        
+                        l++
+                    loop
+                    k++
+                loop
+
+                if(black_num > white_num){
+                    ScoreBlack.i += 4
+                }else : if(black_num == white_num){
+                    ScoreBlack.i += 1 : ScoreWhite.i += 1
+                }else{
+                    ScoreWhite.i += 4
+                }
+                j++
+            loop
+            i++
+        loop
+    //ソート
+        SortScore ScoreBlack, ScoreBoardBlack, biont_num, len
+        SortScore ScoreWhite, ScoreBoardWhite, biont_num, len
+    //交叉
+        //上位2つを保存
+            i = 0
+            childlen_num = 0
+            repeat 2
+                j = 0
+                repeat len
+                    NewScoreBoardBlack.childlen_num.j = ScoreBoardBlack.childlen_num.j
+                    NewScoreBoardWhite.childlen_num.j = ScoreBoardWhite.childlen_num.j
+                    j++
+                loop
+                i++ : childlen_num++
+            loop
+    //交叉
+        i = 0
+        repeat 3
+            //ここから本格的な交叉(二点交叉)
+                k = 0
+                repeat len
+                    NewScoreBoardBlack.childlen_num.k = ScoreBoardBlack.(i + 1).k
+                    NewScoreBoardBlack.(childlen_num + 1).k = ScoreBoardBlack.i.k
+                    
+                    NewScoreBoardWhite.childlen_num.k = ScoreBoardWhite.(i + 1).k
+                    NewScoreBoardWhite.(childlen_num + 1).k = ScoreBoardWhite.i.k
+                    k++
+                loop
+                left = rnd(len):right = rnd(len)
+                if(left > right):tmp = left:left = right:right = tmp
+                k = left
+                repeat
+                    if(k > right):break
+                    NewScoreBoardBlack(childlen_num, k) = ScoreBoardBlack(i, k)
+                    NewScoreBoardBlack(childlen_num + 1, k) = ScoreBoardBlack(i + 1, k)
+                    k++
+                loop
+
+                left = rnd(len):right = rnd(len)
+                if(left > right):tmp = left:left = right:right = tmp
+                k = left
+                repeat
+                    if(k > right):break
+                    NewScoreBoardWhite(childlen_num, k) = ScoreBoardWhite(i, k)
+                    NewScoreBoardWhite(childlen_num + 1, k) = ScoreBoardWhite(i + 1, k)
+                    k++
+                loop
+            //突然変異
+                k = 0
+                repeat len
+                    if(rnd(len) == 0){
+                        NewScoreBoardBlack(childlen_num, k) = rnd(101) - 50
+                    }
+                    if(rnd(len) == 0){
+                        NewScoreBoardBlack(childlen_num + 1, k) = rnd(101) - 50
+                    }
+
+                    if(rnd(len) == 0){
+                        NewScoreBoardWhite(childlen_num, k) = rnd(101) - 50
+                    }
+                    if(rnd(len) == 0){
+                        NewScoreBoardWhite(childlen_num + 1, k) = rnd(101) - 50
+                    }
+                    k++
+                loop
+                childlen_num += 2;
+            i += 2
+        loop
+    //不足分の追加
+        i = childlen_num
+        repeat 1
+            j = 0
+            repeat len
+                NewScoreBoardBlack.i.j = rnd(101) - 50
+                NewScoreBoardWhite.i.j = rnd(101) - 50
+                j++
+            loop
+            i++
+        loop
+    //記録
+        if(generation_num \ 1 == 0) {
+            note = ""
+            i = 0
+            repeat len
+                notesel note
+                noteadd "" + ScoreBoardBlack.0.i
+                i++
+            loop
+    
+            notesel note
+            notesave "ver3.2学習結果/black" + str(generation_num) + ".txt"
+
+            note = ""
+            i = 0
+            repeat len
+                notesel note
+                noteadd "" + ScoreBoardWhite.0.i
+                i++
+            loop
+    
+            notesel note
+            notesave "ver3.2学習結果/white" + str(generation_num) + ".txt"
+        }
+    //世代交代
+        i = 0
+        repeat biont_num
+            j = 0
+            repeat len
+                ScoreBoardBlack(i, j) = NewScoreBoardBlack(i, j)
+                ScoreBoardWhite(i, j) = NewScoreBoardWhite(i, j)
+                j++
+            loop
+            i++
+        loop
+    generation_num++
+    await
+loop
