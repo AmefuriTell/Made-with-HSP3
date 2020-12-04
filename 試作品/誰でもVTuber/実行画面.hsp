@@ -1,0 +1,111 @@
+#module _MinMax_
+    #defcfunc min int a, int b
+        if(a > b) : return b : else : return a
+    #defcfunc max int a, int b
+        if(a < b) : return b : else : return a
+#global
+#include "hspcv.as"
+#include "hspwave.as"
+
+onexit *EXIT
+
+//前準備
+    randomize
+    //変数を初期化
+        sdim ImgPath,,4
+        dim ImgSizex, 4
+        dim ImgSizey, 4
+        MaxWinx = 0
+        MaxWiny = 0
+        BreathDepth = 3
+        BreathSpeed = 2.5
+        BlinkFrequency = 100
+        BodyShakingWidth = 16
+    //画像ファイル名を取得
+        notesel note
+        noteload "data.dat"
+        repeat 4
+            noteget ImgPath(cnt), cnt
+        loop
+    //画像ファイル読み込み
+        repeat 4
+            buffer 100 + cnt
+                picload ImgPath.cnt
+            ImgSizex.cnt = ginfo_winx
+            ImgSizey.cnt = ginfo_winy
+            MaxWinx = max(MaxWinx, ginfo_winx)
+            MaxWiny = max(MaxWiny, ginfo_winy)
+        loop
+    //画像CVバッファ
+        repeat 4
+            cvbuffer cnt, max(MaxWinx, MaxWiny) * 2, max(MaxWinx, MaxWiny) * 2
+            buffer 1, max(MaxWinx, MaxWiny) * 2, max(MaxWinx, MaxWiny) * 2
+                color 0, 255, 0 : boxf
+                pos (ginfo_winx - ImgSizex.cnt) / 2, (ginfo_winy - ImgSizey.cnt) / 2
+                celput 100 + cnt, , 1.0, 1.0
+            gsel 1 : cvputimg cnt : gsel 0
+        loop
+    //回転用CVバッファ
+        cvbuffer 4, max(MaxWinx, MaxWiny) * 2, max(MaxWinx, MaxWiny) * 2
+        buffer 5, max(MaxWinx, MaxWiny) * 2, max(MaxWinx, MaxWiny) * 2
+        gsel 0
+
+    //マイク関係
+       sdim MicBuffer, 44200
+       volume = 0
+       VolumeThreshold = 131
+       w_in_open 44200, 8, 1
+       if(stat) : dialog "error" : end
+       w_in_add MicBuffer, 640, 1
+//メイン
+    screen 0, max(MaxWinx, MaxWiny), max(MaxWinx, MaxWiny)
+    title "実行画面"
+    TimeCount = 0.0
+    repeat
+        volume = 0
+        repeat
+            w_in_bufs MicPreBuffer // MicBufferの残りを調べる
+            await 0
+            if(MicPreBuffer == 0) : break
+        loop
+        repeat 640
+            volume = max(abs(peek(MicBuffer, cnt)), volume)
+        loop
+
+        if(volume >= VolumeThreshold){
+            ImageBufPlus = 1
+        }else{
+            ImageBufPlus = 0
+        }
+        if(rnd(BlinkFrequency) == 0){
+            repeat 5
+                cvsel 4 : cvcopy 3 - ImageBufPlus, 0, 0 : cvrotate rad2deg(atan(ginfo_winy, sin(deg2rad(TimeCount * BreathSpeed)) * BodyShakingWidth)) - 90.0, 1.0, 0, ImgSizey.3
+                gsel 5 : cvgetimg 4, 0 : gsel 0
+                redraw 0
+                    color 0, 255, 0 : boxf : color 0, 0, 0
+                    Breath = sin(deg2rad(TimeCount * BreathSpeed * 2.0)) * double(BreathDepth)
+                    gmode 0, max(MaxWinx, MaxWiny), max(MaxWinx, MaxWiny)
+                    pos 0, Breath + BreathDepth
+                    gcopy 5, max(MaxWinx, MaxWiny) / 2, max(MaxWinx, MaxWiny) / 2, max(MaxWinx, MaxWiny), max(MaxWinx, MaxWiny)
+                redraw 1
+                TimeCount += 1.0
+                await 1
+            loop
+        }else{
+            cvsel 4 : cvcopy 1 - ImageBufPlus, 0, 0 : cvrotate rad2deg(atan(ginfo_winy, sin(deg2rad(TimeCount * BreathSpeed)) * BodyShakingWidth)) - 90.0, 1.0, 0, ImgSizey.1
+            gsel 5 : cvgetimg 4, 0 : gsel 0
+            redraw 0
+                color 0, 255, 0 : boxf : color 0, 0, 0
+                Breath = sin(deg2rad(TimeCount * BreathSpeed * 2.0)) * double(BreathDepth)
+                gmode 0, max(MaxWinx, MaxWiny), max(MaxWinx, MaxWiny)
+                pos 0, Breath + BreathDepth
+                gcopy 5, max(MaxWinx, MaxWiny) / 2, max(MaxWinx, MaxWiny) / 2, max(MaxWinx, MaxWiny), max(MaxWinx, MaxWiny)
+            redraw 1
+        }
+        TimeCount += 1.0
+        w_in_add MicBuffer, 640, 0
+        await 1
+    loop
+*EXIT
+    w_free
+end

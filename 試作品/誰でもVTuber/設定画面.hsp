@@ -1,0 +1,108 @@
+#module _MinMax_
+    #defcfunc min int a, int b
+        if(a > b) : return b : else : return a
+    #defcfunc max int a, int b
+        if(a < b) : return b : else : return a
+#global
+onexit *EXIT
+//前準備
+    //変数を初期化
+        sdim ImgPath,,4
+        sdim ImgMess,,4
+        ldim SelectButton,100
+        savenote = ""
+        now_cur = dir_cur
+    //画像ファイル名を取得
+        notesel note
+        noteload "data.dat"
+        repeat 4
+            noteget ImgPath(cnt), cnt
+        loop
+    //メッセージを初期化
+        ImgMess.0 = "画像1:目開き・口開き"
+        ImgMess.1 = "画像2:目開き・口閉じ"
+        ImgMess.2 = "画像3:目閉じ・口開き"
+        ImgMess.3 = "画像4:目閉じ・口閉じ"
+    //ラベルを指定
+        SelectButton = *SelectImg1, *SelectImg2, *SelectImg3, *SelectImg4
+    //仮想スクリーン生成
+        buffer 1, 225, 225
+            color 0, 0, 0 : boxf
+            color 230, 230, 230 : boxf 1, 1, ginfo_winx-1 - 1, ginfo_winy-1 - 1
+        repeat 4
+            buffer 100 + cnt
+                if(ImgPath.cnt != ""):picload ImgPath.cnt
+            buffer 104 + cnt, 225, 225
+                if(ImgPath.cnt != ""){
+                    gsel 100 + cnt
+                    rate = 225.0 / double(max(ginfo_winx, ginfo_winy))
+                    gsel 104 + cnt
+                    pos 0, 0 : celput 100 + cnt, , rate, rate
+                    gsel 0
+                }
+        loop
+        gsel 0
+//メイン
+    screen 0, 960, 540
+    title "誰でもVTuber 設定画面"
+    gosub *DrawSelectScene
+stop
+
+//フラグ系
+    *SelectImg1
+        ImgNum = 0
+        gosub *SelectImg
+    stop
+    *SelectImg2
+        ImgNum = 1
+        gosub *SelectImg
+    stop
+    *SelectImg3
+        ImgNum = 2
+        gosub *SelectImg
+    stop
+    *SelectImg4
+        ImgNum = 3
+        gosub *SelectImg
+    stop
+    *SelectImg
+        dialog "PNG", 16
+        if(stat == 1){
+            ImgPath.ImgNum = refstr
+            notesel note
+            noteadd "" + ImgPath.ImgNum, ImgNum, 1
+            notesel note
+            notesave now_cur + "\\data.dat"
+            gsel 100 + ImgNum : picload ImgPath.ImgNum
+            rate = 225.0 / double(max(ginfo_winx, ginfo_winy))
+            gsel 104 + ImgNum
+            pos 0, 0 : celput 100 + ImgNum, , rate, rate
+            gsel 0
+        }
+        gosub *DrawSelectScene
+    return
+//描画のメイン
+    *DrawSelectScene
+        cls
+        font "あんず文字等幅2020", 16 : objsize ,20
+        repeat 4
+            pos 12 + (12 + 225) * cnt, 12
+            if(ImgPath.cnt != ""){
+                celput 104 + cnt,,1.0, 1.0
+            }else{
+                celput 1, , 1.0, 1.0
+            }
+            pos 12 + (12 + 225) * cnt, 249 : mes ImgMess(cnt)
+            pos 163 + (12 + 225) * cnt, 247 : button "選択", SelectButton(cnt)
+        loop
+
+        objsize 225, 32 : pos 723, 496 : button "開始", *Launch
+    return
+//
+    *Launch
+        exec "実行画面.exe",
+    stop
+//終了時
+*EXIT
+    
+end
