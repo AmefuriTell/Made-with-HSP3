@@ -1,0 +1,191 @@
+#include "hspcv.as"
+#include "hspwave.as"
+#module _MinMax_
+    #defcfunc min int a, int b
+        if(a > b) : return b : else : return a
+    #defcfunc max int a, int b
+        if(a < b) : return b : else : return a
+#global
+onexit gosub *EXIT
+onexit 0
+now_cur = dir_cur
+//設定画面準備
+    //変数を初期化
+        sdim ImgPath, 4
+        sdim ImgMess, 4
+        dim ImgBufID, 4
+        dim ImgSizex, 4
+        dim ImgSizey, 4
+        dim ImgButID, 4
+        ImgSizeMaxx = 0
+        ImgSizeMaxy = 0
+    //画像関係
+        //画像ファイル名取得
+            notesel SaveData
+            noteload "data.dat"
+            repeat 4
+                noteget ImgPath(cnt),cnt
+            loop
+        //画像取得
+            repeat 4
+                ImgBufID(cnt) = ginfo_newid
+                buffer ImgBufID(cnt)
+            loop
+            repeat 4
+                gsel ImgBufID(cnt)
+                    exist ImgPath(cnt)
+                    if(strsize != -1){
+                        picload ImgPath(cnt)
+                        ImgSizex(cnt) = ginfo_winx : ImgSizey(cnt) = ginfo_winy
+                        ImgSizeMaxx = Max(ImgSizeMaxx, ImgSizex(cnt)) : ImgSizeMaxy = Max(ImgSizeMaxy, ImgSizey(cnt))
+                    }else{
+                        ImgPath(cnt) = ""
+                    }
+                gsel 0
+            loop
+        //設定画面用の画像生成
+            repeat 4
+                buffer 100 + cnt, 225, 225
+                    color 0, 0, 0 : boxf
+                    color 192, 192, 192 : boxf 1, 1, 223, 223
+            loop
+    //メッセージを初期化
+        ImgMess.0 = "画像1:目開き・口開き"
+        ImgMess.1 = "画像2:目開き・口閉じ"
+        ImgMess.2 = "画像3:目閉じ・口開き"
+        ImgMess.3 = "画像4:目閉じ・口閉じ"
+//実行画面準備
+    //変数を初期化
+        sdim MicBuffer, 44200
+        Volume = 0
+        VolumeThreshold = 131
+        BreathDepth = 3
+        BreathSpeed = 2.5
+        BlinkFrequency = 100
+        BodyShakingWidth = 16
+    //画像用CVバッファ
+        repeat 4
+            cvbuffer cnt, max(ImgSizeMaxx, ImgSizeMaxy) * 2, max(ImgSizeMaxx, ImgSizeMaxy) * 2
+            buffer 200, max(ImgSizeMaxx, ImgSizeMaxy) * 2, max(ImgSizeMaxx, ImgSizeMaxy) * 2
+                color 0, 255, 0 : boxf
+                pos (ginfo_winx - ImgSizex(cnt)) / 2, (ginfo_winy - ImgSizey(cnt)) / 2
+                celput ImgBufID(cnt),, 1.0, 1.0
+                cvputimg cnt
+        loop
+        gsel 0
+    //回転用CVバッファ
+        cvbuffer 4, max(ImgSizeMaxx, ImgSizeMaxy) * 2, max(ImgSizeMaxx, ImgSizeMaxy) * 2
+        buffer 201, max(ImgSizeMaxx, ImgSizeMaxy) * 2, max(ImgSizeMaxx, ImgSizeMaxy) * 2
+        gsel 0
+//メイン
+    screen 0, 960, 520
+    screen 1000, max(ImgSizeMaxy, ImgSizeMaxx), max(ImgSizeMaxy, ImgSizeMaxx)
+    gosub *DrawSetupScreen
+stop
+//画像読み込み
+*LoadImg
+    repeat 4
+        gsel ImgBufID(cnt)
+            exist ImgPath(cnt)
+            if(strsize != -1){
+                picload ImgPath(cnt)
+                ImgSizex(cnt) = ginfo_winx : ImgSizey(cnt) = ginfo_winy
+                ImgSizeMaxx = Max(ImgSizeMaxx, ImgSizex(cnt)) : ImgSizeMaxy = Max(ImgSizeMaxy, ImgSizey(cnt))
+            }else{
+                ImgPath(cnt) = ""
+            }
+        gsel 0
+    loop
+    gsel 200
+    repeat 4
+        color 0, 255, 0 : boxf
+        pos (ginfo_winx - ImgSizex(cnt)) / 2, (ginfo_winy - ImgSizey(cnt)) / 2
+        celput ImgBufID(cnt),, 1.0, 1.0
+        cvputimg cnt
+    loop
+    gsel 0
+return
+//設定画面描画
+*DrawSetupScreen
+    cls : gsel 0, 1
+    repeat 4
+        if(ImgPath.cnt != ""){
+            gsel 100 + cnt 
+                pos (225.0 - 225.0 * double(ImgSizex(cnt)) / double(max(ImgSizex(cnt), ImgSizey(cnt)))) / 2, (225.0 - 225.0 * double(ImgSizey(cnt)) / double(max(ImgSizex(cnt), ImgSizey(cnt)))) / 2
+                celput ImgBufID(cnt),, 225.0 / double(max(ImgSizex(cnt), ImgSizey(cnt))) , 225.0 / double(max(ImgSizex(cnt), ImgSizey(cnt))) 
+            gsel 0
+        }
+        pos 12 + (12 + 225) * cnt, 12 : celput 100 + cnt,,1.0, 1.0
+        font "",16 : objsize, 20
+        pos 12 + (12 + 225) * cnt, 249 : mes ImgMess(cnt)
+        pos 163 + (12 + 225) * cnt, 247 : button "選択", *ImgSelect : ImgButID(cnt) = stat
+
+        pos 0, 400 : button "プレビュー", *PreRunEasyVTuber
+
+    loop
+return
+//画像選択
+*ImgSelect
+    PushButID = stat
+    dialog "PNG", 16
+    if(stat == 1){
+        ImgPath(PushButID) = refstr
+        notesel SaveData
+        noteadd ImgPath(PushButID), PushButID, 1
+        notesave now_cur + "/data.dat"
+        gosub *LoadImg
+        gosub *DrawSetupScreen
+    }
+stop
+*RunEasyVTuber
+    gsel 0, -1
+*PreRunEasyVTuber
+    gsel 1000, 1
+*EasyVTuber
+    onexit 1
+    //一度マイクを閉じておく
+        w_free
+    //マイクを開く
+        w_in_open 44200, 8, 1
+       if(stat) : dialog "error" : end
+       w_in_add MicBuffer, 640, 1
+    //メイン画面
+        TimeCount = 0.0
+        repeat
+            volume = 0
+            repeat
+                w_in_bufs MicPreBuffer // MicBufferの残りを調べる
+                await 0
+                if(MicPreBuffer == 0) : break
+            loop
+            repeat 640
+                volume = max(abs(peek(MicBuffer, cnt)), volume)
+            loop
+
+            if(volume >= VolumeThreshold){
+                ImageBufPlusV = 1
+            }else{
+                ImageBufPlusV = 0
+            }
+            if(rnd(BlinkFrequency) == 0){
+                
+            }else{
+                
+            }
+            cvsel 4 : cvcopy 1 - ImageBufPlusV, 0, 0 : cvrotate rad2deg(atan(ginfo_winy, sin(deg2rad(TimeCount * BreathSpeed)) * BodyShakingWidth)) - 90.0, 1.0, 0, ImgSizeMaxy
+            gsel 201 : cvgetimg 4, 0 : gsel 1000
+            redraw 0
+                color 0, 255, 0 : boxf : color 0, 0, 0
+                Breath = sin(deg2rad(TimeCount * BreathSpeed * 2.0)) * double(BreathDepth)
+                pos 0, Breath + BreathDepth
+                gcopy 201, max(ImgSizeMaxx, ImgSizeMaxy) / 2, max(ImgSizeMaxx, ImgSizeMaxy) / 2, max(ImgSizeMaxx, ImgSizeMaxy), max(ImgSizeMaxx, ImgSizeMaxy)
+            redraw 1
+            TimeCount += 1.0
+            w_in_add MicBuffer, 640, 0
+            await 1
+        loop
+stop
+
+*EXIT
+    w_free
+end
