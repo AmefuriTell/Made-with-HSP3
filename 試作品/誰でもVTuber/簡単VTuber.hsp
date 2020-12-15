@@ -1,3 +1,5 @@
+#packopt name "ä»íPVTuber
+
 #include "hspcv.as"
 #include "hspwave.as"
 #include "EasyVTuber.as"
@@ -74,6 +76,7 @@ onexit gosub *EXIT
     gosub *SetupBackgroundColor
 
 screen 0, 740, 500
+title "ä»íPVTuber ê›íËâÊñ "
 onexit 0
 *main
     repeat
@@ -279,7 +282,7 @@ return
         gmode 4,,,256 : color 255, 255, 255 : pos 0, 0 : celput 105,,1.0,1.0
         ImageID = 0
         repeat 4
-            gsel 201 + ImageID
+            buffer 201 + ImageID
                 color SetR, SetG, SetB : boxf
                 pos (size - ImageSizex(ImageID)) / 2, (size - ImageSizey(ImageID)) / 2
                 celput 301 + ImageID,,1.0,1.0
