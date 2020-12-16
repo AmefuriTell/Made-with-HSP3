@@ -1,4 +1,4 @@
-#packopt name "簡単VTuber
+#packopt name "簡単VTuber"
 
 #include "hspcv.as"
 #include "hspwave.as"
@@ -17,13 +17,18 @@ onexit gosub *EXIT
     SetR = 0
     SetG = 255
     SetB = 0
-    Maxsize = 0
+    Maxsize = 1
     savedata = ""
     bsavedata = ""
     BreathDepth = 3
-    BodyShakingWidth = 16
+    BodyShakingWidth = 20
 //画像初期化
-    
+    repeat 4
+        cvbuffer cnt
+        buffer 301 + cnt
+        buffer 201 + cnt
+    loop
+    cvbuffer 4
     buffer 100, 600, 200//画像変更ボタンテンプレ
         color 0, 0,   0 : boxf   0, 0, 199, 199 : color 255, 255, 255 : boxf   1, 1, 198, 198
         color 0, 0, 255 : boxf 400, 0, 599, 199 : color 255, 255, 255 : boxf 401, 1, 598, 198
@@ -41,10 +46,6 @@ onexit gosub *EXIT
     buffer 106, 270, 40//背景色変更ボタン
         color SetR, SetG, SetB : boxf
         gmode 4,,,256 : color 255, 255, 255 : pos 0, 0 : celput 105,,1.0,1.0
-    repeat 4
-        cvbuffer cnt
-    loop
-    cvbuffer 4
 //セーブデータ読み込み
     notesel savedata
     noteload "save.dat"
@@ -58,6 +59,8 @@ onexit gosub *EXIT
             SelectedImagePath = buf
             PushedSetupImageButtonID = cnt
             gosub *SetupImage
+        }else{
+            ImagePath(cnt) = ""
         }
     loop
     noteget buf, 4
@@ -66,6 +69,8 @@ onexit gosub *EXIT
     if(buf != "") : VolumeThreshold = int(buf) : bVolumeThreshold = VolumeThreshold
     noteget buf, 6
     if(buf != "") : BreathSpeed = double(buf) : bBreathSpeed = BreathSpeed
+    noteget buf, 10
+    if(buf != "") : BodyShakingWidth = double(buf) : bBodyShakingWidth = BodyShakingWidth
 
     noteget buf, 7
     if(buf != "") : SetR = int(buf)
@@ -86,105 +91,117 @@ stop
 
 *SetupScreen//セットアップします。
     BreakFlag = 0
-    gsel 0, 1 : cls
+    redraw 0
+        gsel 0, 1 : cls
 
-    color 240, 240, 240 : boxf : color 33, 33, 33
+        color 240, 240, 240 : boxf
+        color 33, 33, 33
 
-    pos 20, 20
-    objsize 200, 200
-    objimage 101, 0, 0, 200, 0, 400, 0
-    button gosub "", *SetupImageHub : SetupImageButtonID(0) = stat
-    pos 50, 230
-    font "ＭＳ ゴシック", 20
-    mes "目開き・口開き"
+        pos 20, 20
+        objsize 200, 200
+        objimage 101, 0, 0, 200, 0, 400, 0
+        button gosub "", *SetupImageHub : SetupImageButtonID(0) = stat
+        pos 50, 230
+        font "ＭＳ ゴシック", 20
+        mes "目開き・口開き"
 
-    pos 240, 20
-    objsize 200, 200
-    objimage 102, 0, 0, 200, 0, 400, 0
-    button gosub "", *SetupImageHub : SetupImageButtonID(1) = stat
-    pos 270, 230
-    font "ＭＳ ゴシック", 20
-    mes "目開き・口閉じ"
+        pos 240, 20
+        objsize 200, 200
+        objimage 102, 0, 0, 200, 0, 400, 0
+        button gosub "", *SetupImageHub : SetupImageButtonID(1) = stat
+        pos 270, 230
+        font "ＭＳ ゴシック", 20
+        mes "目開き・口閉じ"
 
-    pos 20, 260
-    objsize 200, 200
-    objimage 103, 0, 0, 200, 0, 400, 0
-    button gosub "", *SetupImageHub : SetupImageButtonID(2) = stat
-    pos 50, 470
-    font "ＭＳ ゴシック", 20
-    mes "目閉じ・口開き"
+        pos 20, 260
+        objsize 200, 200
+        objimage 103, 0, 0, 200, 0, 400, 0
+        button gosub "", *SetupImageHub : SetupImageButtonID(2) = stat
+        pos 50, 470
+        font "ＭＳ ゴシック", 20
+        mes "目閉じ・口開き"
 
-    pos 240, 260
-    objsize 200, 200
-    objimage 104, 0, 0, 200, 0, 400, 0
-    button gosub "", *SetupImageHub : SetupImageButtonID(3) = stat
-    pos 270, 470
-    font "ＭＳ ゴシック", 20
-    mes "目閉じ・口閉じ"
+        pos 240, 260
+        objsize 200, 200
+        objimage 104, 0, 0, 200, 0, 400, 0
+        button gosub "", *SetupImageHub : SetupImageButtonID(3) = stat
+        pos 270, 470
+        font "ＭＳ ゴシック", 20
+        mes "目閉じ・口閉じ"
 
-    pos 470, 30
-    font "ＭＳ ゴシック", 20
-    mes "瞬きする頻度"
-    pos 630, 30
-    objsize 90, 20
-    objmode 2
-    font "ＭＳ ゴシック", 18
-    input BlinkFrequency,,,5
+        pos 470, 30
+        font "ＭＳ ゴシック", 20
+        mes "瞬きする頻度"
+        pos 630, 30
+        objsize 90, 20
+        objmode 2
+        font "ＭＳ ゴシック", 18
+        input BlinkFrequency,,,5
 
-    pos 470, 90
-    font "ＭＳ ゴシック", 20
-    mes "口を開く音量"
-    pos 630, 90
-    objsize 90, 20
-    objmode 2
-    font "ＭＳ ゴシック", 18
-    input VolumeThreshold,,,3
+        pos 470, 80
+        font "ＭＳ ゴシック", 20
+        mes "口を開く音量"
+        pos 630, 80
+        objsize 90, 20
+        objmode 2
+        font "ＭＳ ゴシック", 18
+        input VolumeThreshold,,,3
 
-    pos 470, 150
-    font "ＭＳ ゴシック", 20
-    mes "体の揺れる速度"
-    pos 630, 150
-    objsize 90, 20
-    objmode 2
-    font "ＭＳ ゴシック", 18
-    input BreathSpeed,,,9
+        pos 470, 130
+        font "ＭＳ ゴシック", 20
+        mes "体の揺れる速度"
+        pos 630, 130
+        objsize 90, 20
+        objmode 2
+        font "ＭＳ ゴシック", 18
+        input BreathSpeed,,,9
 
-    pos 470, 210
-    font "ＭＳ ゴシック", 20
-    mes "透過する背景色"
-    pos 630, 200
-    objsize 90, 40
-    objimage 106, 0, 0, 90, 0, 180, 0
-    button gosub "", *SetupImageHub : SetupBackgroundColorButtonID = stat
+        pos 470, 180
+        font "ＭＳ ゴシック", 20
+        mes "体の揺れる幅"
+        pos 630, 180
+        objsize 90, 20
+        objmode 2
+        font "ＭＳ ゴシック", 18
+        input BodyShakingWidth,,,9
 
-    pos 470, 260
-    objsize 250, 40
-    objmode 2
-    font "ＭＳ ゴシック", 20
-    objimage -1
-    //button gosub "設定を更新する", *SetupImageHub
+        pos 470, 230
+        font "ＭＳ ゴシック", 20
+        mes "透過する背景色"
+        pos 630, 220
+        objsize 90, 40
+        objimage 106, 0, 0, 90, 0, 180, 0
+        button gosub "", *SetupImageHub : SetupBackgroundColorButtonID = stat
 
-    pos 470, 320
-    objsize 250, 40
-    objmode 2
-    font "ＭＳ ゴシック", 20
-    objimage -1
-    button gosub "プレビューで開始", *RunHub : PreRunButtonID = stat
+        pos 470, 260
+        objsize 250, 40
+        objmode 2
+        font "ＭＳ ゴシック", 20
+        objimage -1
+        //button gosub "設定を更新する", *SetupImageHub
 
-    pos 470, 380
-    objsize 250, 80
-    objmode 2
-    font "ＭＳ ゴシック", 20
-    objimage -1
-    button gosub "開始", *RunHub : RunButtonID = stat
+        pos 470, 320
+        objsize 250, 40
+        objmode 2
+        font "ＭＳ ゴシック", 20
+        objimage -1
+        button gosub "プレビューで開始", *RunHub : PreRunButtonID = stat
 
+        pos 470, 380
+        objsize 250, 80
+        objmode 2
+        font "ＭＳ ゴシック", 20
+        objimage -1
+        button gosub "開始", *RunHub : RunButtonID = stat
+    redraw 1
     repeat
         if(BreakFlag != 0 or RunFlag != 0) : break
-        if(bBlinkFrequency != BlinkFrequency or bVolumeThreshold != VolumeThreshold or bBreathSpeed != BreathSpeed){
+        if(bBlinkFrequency != BlinkFrequency or bVolumeThreshold != VolumeThreshold or bBreathSpeed != BreathSpeed or bBodyShakingWidth != BodyShakingWidth){
             notesel savedata
             noteadd "" + BlinkFrequency, 4, 1
             noteadd "" + VolumeThreshold, 5, 1
             noteadd "" + BreathSpeed, 6, 1
+            noteadd "" + BodyShakingWidth, 10, 1
             notesave exe_cur + "/save.dat"
 
             bBlinkFrequency = BlinkFrequency
@@ -249,7 +266,6 @@ return
             ImageSizex(PushedSetupImageButtonID) = ginfo_winx
             ImageSizey(PushedSetupImageButtonID) = ginfo_winy
             size = max(ImageSizex(PushedSetupImageButtonID), ImageSizey(PushedSetupImageButtonID))
-            Maxsize = max(Maxsize, size)
         buffer 201 + PushedSetupImageButtonID, size, size
             color SetR, SetG, SetB : boxf
             pos (size - ImageSizex(PushedSetupImageButtonID)) / 2, (size - ImageSizey(PushedSetupImageButtonID)) / 2
@@ -267,6 +283,11 @@ return
         noteadd SelectedImagePath, PushedSetupImageButtonID, 1
         notesave exe_cur + "/save.dat"
         SelectedImagePath = ""
+        Maxsize = 0
+        repeat 4
+            Maxsize = max(Maxsize, max(ImageSizex(cnt), ImageSizey(cnt)))
+        loop
+        gosub *SetupCVBuffer
     }
     BreakFlag = 1
 return
@@ -282,9 +303,9 @@ return
         gmode 4,,,256 : color 255, 255, 255 : pos 0, 0 : celput 105,,1.0,1.0
         ImageID = 0
         repeat 4
-            buffer 201 + ImageID
+            buffer 201 + ImageID, Maxsize, Maxsize
                 color SetR, SetG, SetB : boxf
-                pos (size - ImageSizex(ImageID)) / 2, (size - ImageSizey(ImageID)) / 2
+                pos (Maxsize - ImageSizex(ImageID)) / 2, (Maxsize - ImageSizey(ImageID)) / 2
                 celput 301 + ImageID,,1.0,1.0
             gsel 101 + ImageID
                 repeat 3
@@ -301,16 +322,21 @@ return
 return
 *RunHub
     PushedButtonID = stat
+    retFlag = 0
+    repeat 4
+        if(ImagePath(cnt) == "") : retFlag = 1
+    loop
+    if(retFlag == 1) : dialog "画像を全て設定してください。" : retFlag = 0 : return
     onexit 1
     switch PushedButtonID
         case PreRunButtonID
             RunFlag = 1
-            screen 1, size, size, 8
+            screen 1, Maxsize + BodyShakingWidth * 3, Maxsize + BodyShakingWidth * 3, 8
             title "プレビュー"
         swbreak
         case RunButtonID
             RunFlag = 2
-            screen 1, size, size
+            screen 1, Maxsize + BodyShakingWidth * 3, Maxsize + BodyShakingWidth * 3
             title "簡単VTuber 実行画面"
             gsel 0, -1
         swbreak
@@ -328,12 +354,14 @@ return
         if(stat) : dialog "error" : end
         w_in_add MicBuffer, 884, 1
         BreakFlag = 0
+    TimeCount = 0.0
     repeat
-        if(bsavedata != savedata){
-            if(RunFlag == 2) : gsel 0, -1
-            bsavedata = savedata
-            gosub *SetupScreen
-            gosub *SetupCVBuffer
+        if(RunFlag == 1){
+            if(bsavedata != savedata){
+                bsavedata = savedata
+                gosub *SetupScreen
+                gosub *SetupCVBuffer
+            }
         }
         if(BreakFlag == 1) : BreakFlag = 0 : break
         volume = 0
@@ -351,40 +379,41 @@ return
         }else{
             BlinkImageBufPlus = 1
         }
-        cvsel 4 : cvcopy BlinkImageBufPlus - VolumeImageBufPlus, 0, 0 : cvrotate rad2deg(atan(ginfo_winy, sin(deg2rad(TimeCount * BreathSpeed)) * BodyShakingWidth)) - 90.0, 1.0, 0, Maxsize
+        cvsel 4 : cvcopy BlinkImageBufPlus - VolumeImageBufPlus, 0, 0 : cvrotate rad2deg(atan(Maxsize, sin(deg2rad(TimeCount * BreathSpeed)) * BodyShakingWidth)) - 90.0, 1.0, 0, Maxsize
         gsel 99 : cvgetimg 4, 0 : gsel 1
         redraw 0
-            color 0, 255, 0 : boxf : color 0, 0, 0
+            color SetR, SetG, SetB : boxf : color 0, 0, 0
             Breath = sin(deg2rad(TimeCount * BreathSpeed * 2.0)) * double(BreathDepth)
             gmode 0
             pos 0, Breath + BreathDepth
-            gcopy 99, Maxsize / 2, Maxsize / 2, Maxsize, Maxsize
+            gcopy 99, Maxsize / 2 + BodyShakingWidth / 2, Maxsize / 2 + BodyShakingWidth / 2, Maxsize  + BodyShakingWidth * 4, Maxsize + BodyShakingWidth * 4
         redraw 1
         TimeCount += 1.0
         if(MicPreBuffer == 0) : w_in_add MicBuffer, 884, 0
         await
     loop
     w_free
+    screen 0, 740, 500
+    await
+    gsel 1, -1
+    BreakFlag = 1
 return
 *SetupCVBuffer
     repeat 4
-        cvsel cnt : cvresize Maxsize * 2, Maxsize * 2
-        buffer 99, Maxsize * 2, Maxsize * 2
+        cvsel cnt : cvresize Maxsize * 2 + BodyShakingWidth * 4, Maxsize * 2 + BodyShakingWidth * 4
+        buffer 99, Maxsize * 2 + BodyShakingWidth * 4, Maxsize * 2 + BodyShakingWidth * 4
             color SetR, SetG, SetB : boxf
             pos (ginfo_winx - ImageSizex(cnt)) / 2, (ginfo_winy - ImageSizey(cnt)) / 2
             celput 301 + cnt,,1.0,1.0
         cvputimg cnt
     loop
-    cvsel 4 : cvresize Maxsize * 2, Maxsize * 2
-    buffer 99, Maxsize * 2, Maxsize * 2
-    gsel 1
+    cvsel 4 : cvresize Maxsize * 2 + BodyShakingWidth * 4, Maxsize * 2 + BodyShakingWidth * 4
+    buffer 99, Maxsize * 2 + BodyShakingWidth * 4, Maxsize * 2 + BodyShakingWidth * 4
+    if(RunFlag == 1) : screen 1, Maxsize + BodyShakingWidth * 3, Maxsize + BodyShakingWidth * 3, 8 : else : if(RunFlag == 2) : screen 1, Maxsize + BodyShakingWidth * 3, Maxsize + BodyShakingWidth * 3
 return
 *EXIT
     if(wparam == 1){
-        w_free
         BreakFlag = 1
-        gsel 0, 1
-        gsel 1, -1
     }else : if(wparam == 0){
         w_free
         end
