@@ -8,7 +8,9 @@
 onexit gosub *EXIT
 
 //ïœêîèâä˙âª
-    exe_cur = dir_cur
+    exe_cur = dir_cur + "/"
+    exe_cur = getpath(exe_cur, 16)
+    strrep exe_cur, "\\", "/"
 
     sdim ImagePath,, 4
     dim ImageSizex, 4
@@ -217,7 +219,7 @@ return
     switch PushedButtonID
         case SetupImageButtonID(0)
             PushedSetupImageButtonID = 0
-            dialog "PNG", 16
+            dialog "PNG|JPG", 16
             if(stat == 1){
                 SelectedImagePath = refstr
             }
@@ -225,7 +227,7 @@ return
         swbreak
         case SetupImageButtonID(1)
             PushedSetupImageButtonID = 1
-            dialog "PNG", 16
+            dialog "PNG|JPG", 16
             if(stat == 1){
                 SelectedImagePath = refstr
             }
@@ -233,7 +235,7 @@ return
         swbreak
         case SetupImageButtonID(2)
             PushedSetupImageButtonID = 2
-            dialog "PNG", 16
+            dialog "PNG|JPG", 16
             if(stat == 1){
                 SelectedImagePath = refstr
             }
@@ -241,7 +243,7 @@ return
         swbreak
         case SetupImageButtonID(3)
             PushedSetupImageButtonID = 3
-            dialog "PNG", 16
+            dialog "PNG|JPG", 16
             if(stat == 1){
                 SelectedImagePath = refstr
             }
@@ -260,9 +262,13 @@ return
 return
 *SetupImage
     if(SelectedImagePath != ""){
+        SelectedImagePath = getpath(SelectedImagePath, 16)
+        strrep SelectedImagePath, "\\", "/"
+        Index = instr(SelectedImagePath, 0, exe_cur)
+        if(Index != -1) : SelectedImagePath = strmid(SelectedImagePath, strlen(exe_cur), strlen(SelectedImagePath))
         ImagePath(PushedSetupImageButtonID) = SelectedImagePath
         buffer 301 + PushedSetupImageButtonID
-            picload ImagePath(PushedSetupImageButtonID)
+            picload exe_cur + ImagePath(PushedSetupImageButtonID)
             ImageSizex(PushedSetupImageButtonID) = ginfo_winx
             ImageSizey(PushedSetupImageButtonID) = ginfo_winy
             size = max(ImageSizex(PushedSetupImageButtonID), ImageSizey(PushedSetupImageButtonID))
