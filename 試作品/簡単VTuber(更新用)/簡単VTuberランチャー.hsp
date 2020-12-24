@@ -1,0 +1,53 @@
+/*
+    アルゴリズム
+    
+    00. インターネット接続を確認。
+    01. サーバーからupdata.datをダウンロードしてくる。
+    02. ローカルにあるupdata.datとサーバーから持ってきたupdata.datの一行目が違ったら、それ以降のデータをダウンロードする。
+    03. ドライブ内にダウンロードしたデータ分の空きがあるかどうか確認する。
+    04. ファイルを上書きする。
+*/
+
+//00
+#include "hspsock.as"
+#include "hspinet.as"
+
+screen 0, 400, 300
+color 0, 0, 0 : boxf : color 255, 255, 255 : pos 20, 20 : mes ">>データサーバーへのアクセスを開始"
+sockopen 0, "www.google.co.jp", 80
+if(stat == 0){
+    mes ">>接続に成功\n>>ダウンロードファイル数を取得を開始"
+    sockclose 0
+
+    netinit
+    neturl "https://raw.githubusercontent.com/AmefuriTell/Made-with-HSP3/master/%E5%AE%8C%E6%88%90%E5%93%81/%E7%B0%A1%E5%8D%98VTuber/"
+    netrequest_get "updata.dat"
+
+    repeat
+        netexec res
+        if(res > 0){
+            mes ">>ファイル数取得完了"
+            netgetv downloded_updata
+
+            notesel local_updata
+            noteload "updata.dat"
+
+            if(local_updata)
+        }
+        if(res < 0){
+            neterror estr
+            dialog "ERROR : " + estr + "\nデータの取得に失敗しました。\n簡単VTuberを起動します。", 1, "ダウンロードエラー"
+            goto *EXIT
+        }
+        await 50
+    loop
+}else{
+    dialog "サーバーへのアクセスに失敗しました。\n簡単VTuberを起動します。", 1, "サーバーアクセスエラー"
+    sockclose 0
+    goto *EXIT
+}
+
+stop
+*EXIT
+    ;exec "簡単VTuber.exe"
+end

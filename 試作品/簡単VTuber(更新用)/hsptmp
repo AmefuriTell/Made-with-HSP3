@@ -370,7 +370,7 @@ return
                 gosub *SetupCVBuffer
             }
         }
-        if(BreakFlag == 2) : BreakFlag = 0 : break
+        if(BreakFlag == 1) : BreakFlag = 0 : break
         
         volume = 0
         w_in_bufs MicPreBuffer // MicBuffer‚ÌŽc‚è‚ð’²‚×‚é
@@ -422,7 +422,7 @@ return
 *EXIT
     if(iparam == 1) : w_free : end
     if(wparam == 1){
-        BreakFlag = 2
+        BreakFlag = 1
     }else : if(wparam == 0){
         w_free
         end
