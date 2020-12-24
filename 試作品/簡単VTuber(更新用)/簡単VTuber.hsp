@@ -1,4 +1,5 @@
 #packopt name "ŠÈ’PVTuber"
+#packopt icon "ŠÈ’PVTuber.ico"
 
 #include "hspcv.as"
 #include "hspwave.as"

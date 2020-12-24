@@ -8,6 +8,7 @@
     04. ファイルを上書きする。
 */
 #packopt name "簡単VTuberアップデーター"
+#packopt icon "簡単VTuber2.ico"
 //00
 #include "hspsock.as"
 #include "hspinet.as"
@@ -40,7 +41,7 @@ if(stat == 0){
             
             notesel downloaded_updata
             noteget downloaded_updata_date, 0
-            download_updata_filenum = (notemax - 1) / 3
+            download_updata_filenum = (notemax - 4) / 3
 
             sdim downloaded_file,,download_updata_filenum
             
