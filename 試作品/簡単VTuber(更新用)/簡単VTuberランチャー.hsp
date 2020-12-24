@@ -16,23 +16,68 @@ screen 0, 400, 300
 color 0, 0, 0 : boxf : color 255, 255, 255 : pos 20, 20 : mes ">>データサーバーへのアクセスを開始"
 sockopen 0, "www.google.co.jp", 80
 if(stat == 0){
-    mes ">>接続に成功\n>>ダウンロードファイル数を取得を開始"
+    mes ">>接続に成功\n>>アップデートを確認"
     sockclose 0
 
     netinit
-    neturl "https://raw.githubusercontent.com/AmefuriTell/Made-with-HSP3/master/%E5%AE%8C%E6%88%90%E5%93%81/%E7%B0%A1%E5%8D%98VTuber/"
-    netrequest_get "updata.dat"
+    neturl "https://github.com/AmefuriTell/Made-with-HSP3/blob/master/%E5%AE%8C%E6%88%90%E5%93%81/%E7%B0%A1%E5%8D%98VTuber"
+    netrequest_get "/updata.dat?raw=true"
 
     repeat
         netexec res
         if(res > 0){
-            mes ">>ファイル数取得完了"
-            netgetv downloded_updata
+            
+            netgetv downloaded_updata
 
             notesel local_updata
             noteload "updata.dat"
+            noteget local_updata_date, 0
 
-            if(local_updata)
+            
+            notesel downloaded_updata
+            noteget downloaded_updata_date, 0
+            download_updata_filenum = (notemax - 1) / 3
+
+            sdim downloaded_file,,download_updata_filenum
+            
+            if(local_updata_date != downloaded_updata_date){
+                mes ">>アップデートダウンロード開始"
+                repeat download_updata_filenum
+                    notesel downloaded_updata
+                    noteget download_updata_URL, cnt * 3 + 1
+                    noteget download_updata_request, cnt * 3 + 2
+                    noteget download_updata_filename, cnt * 3 + 3
+
+                    mes ">>" + download_updata_filename + "をダウンロード中"
+                    neturl download_updata_URL
+                    netrequest_get download_updata_request
+                    repeat
+                        netexec res
+                        if(res > 0){
+                            sdim buf, netgetv_size()
+                            netgetv_data buf
+                            bsave download_updata_filename, buf, netgetv_requestsize()
+                            sdim buf
+                            break
+                        }
+                        if(res < 0){
+                            neterror estr
+                            dialog "ERROR : " + estr + "\nデータの取得に失敗しました。\n簡単VTuberを起動します。", 1, "ダウンロードエラー"
+                            goto *EXIT
+                        }
+                        await 5
+                    loop
+                loop
+                local_updata = downloaded_updata
+                notesel local_updata
+                notesave "updata.dat"
+                mes ">>アップデートをかんりょうしました！"
+            }else{
+                mes ">>最新バージョンです"
+                
+            }
+            
+            goto *EXIT
         }
         if(res < 0){
             neterror estr
@@ -47,7 +92,7 @@ if(stat == 0){
     goto *EXIT
 }
 
-stop
 *EXIT
-    ;exec "簡単VTuber.exe"
+    wait
+    exec "簡単VTuber.exe"
 end
