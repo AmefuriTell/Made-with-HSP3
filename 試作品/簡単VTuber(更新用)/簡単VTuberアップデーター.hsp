@@ -7,12 +7,12 @@
     03. ドライブ内にダウンロードしたデータ分の空きがあるかどうか確認する。
     04. ファイルを上書きする。
 */
-
+#packopt name "簡単VTuberアップデーター"
 //00
 #include "hspsock.as"
 #include "hspinet.as"
 
-screen 0, 400, 300
+screen 0, 400, 300 : title "簡単VTuberアップデーター"
 color 0, 0, 0 : boxf : color 255, 255, 255 : pos 20, 20 : mes ">>データサーバーへのアクセスを開始"
 sockopen 0, "www.google.co.jp", 80
 if(stat == 0){
@@ -71,7 +71,7 @@ if(stat == 0){
                 local_updata = downloaded_updata
                 notesel local_updata
                 notesave "updata.dat"
-                mes ">>アップデートをかんりょうしました！"
+                mes ">>アップデートが完了しました"
             }else{
                 mes ">>最新バージョンです"
                 
@@ -93,6 +93,7 @@ if(stat == 0){
 }
 
 *EXIT
-    wait
+    mes ">>簡単VTuberを起動します"
+    wait 100
     exec "簡単VTuber.exe"
 end
