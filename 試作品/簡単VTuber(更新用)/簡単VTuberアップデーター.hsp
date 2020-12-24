@@ -20,8 +20,13 @@ if(stat == 0){
     sockclose 0
 
     netinit
-    neturl "https://github.com/AmefuriTell/Made-with-HSP3/blob/master/%E5%AE%8C%E6%88%90%E5%93%81/%E7%B0%A1%E5%8D%98VTuber"
-    netrequest_get "/updata.dat?raw=true"
+
+    notesel local_updata
+    noteload "updata.dat"
+    noteget local_updata_updataURL, 1
+    noteget local_updata_request, 2
+    neturl local_updata_updataURL
+    netrequest_get local_updata_request
 
     repeat
         netexec res
@@ -30,7 +35,6 @@ if(stat == 0){
             netgetv downloaded_updata
 
             notesel local_updata
-            noteload "updata.dat"
             noteget local_updata_date, 0
 
             
@@ -44,9 +48,9 @@ if(stat == 0){
                 mes ">>アップデートダウンロード開始"
                 repeat download_updata_filenum
                     notesel downloaded_updata
-                    noteget download_updata_URL, cnt * 3 + 1
-                    noteget download_updata_request, cnt * 3 + 2
-                    noteget download_updata_filename, cnt * 3 + 3
+                    noteget download_updata_URL, cnt * 3 + 4
+                    noteget download_updata_request, cnt * 3 + 5
+                    noteget download_updata_filename, cnt * 3 + 6
 
                     mes ">>" + download_updata_filename + "をダウンロード中"
                     neturl download_updata_URL
