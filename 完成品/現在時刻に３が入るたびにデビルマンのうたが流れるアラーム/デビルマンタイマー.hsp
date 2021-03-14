@@ -1,0 +1,101 @@
+#epack "devil.wav"
+#packopt name "現在時刻に3が入るたびにデビルマンのうたが流れるタイマー"
+
+#include "hsp3util.as"
+#include "hgimg3.as"
+
+dmmini
+
+dim timec, 4
+n = "3"
+music_file = "devil.wav"
+
+//設定画面
+    gosub *draw_setting_screen
+    repeat
+        gettimestr time
+        title time
+        if('0' <= peek(n, 0) & peek(n, 0) <= '9'){
+	    }else{
+		    dialog "0～9の数字で入力してください"
+		    n = "3"
+		    gosub *draw_setting_screen
+		}
+        wait 5
+    loop
+stop
+*setting_music_file
+    dialog "wav", 16
+    music_file = refstr
+    gosub *draw_setting_screen
+return
+*draw_setting_screen
+    cls
+    pos 0, 0 :mes "再生するwavファイル"
+    pos 0, 20 : objmode 2:input music_file,ginfo_winx - 80, 24
+    pos ginfo_winx - 80, 19 : objsize 80, 26 : button gosub "参照", *setting_music_file
+
+    pos 0, 50 : mes "再生する数字"
+    pos 0, 70 : objmode 2:input n,ginfo_winx, 24, 1
+    pos 0, 100 : objsize ginfo_winx, 26 : button gosub "アラーム開始", *main
+return
+*main
+    dmmload music_file, 0
+    n = int(n)
+    return_flag = 0
+    cls
+    
+    pos 0, 48 : button gosub "戻る", *retrun_screen
+    
+    repeat
+        gettimestr time
+        title time
+        redraw 0
+            color 255, 255, 255 : boxf
+            color 0, 0, 0
+            pos 0, 0
+            mes "現在時刻に" + n + "が含まれたら、曲が流れます"
+            mes "現在時刻 : " + time
+        redraw 1
+        //戻るボタンが押されたら
+        if(return_flag == 1) : break
+        
+
+        timec(0) = str(peek(time, 0) - '0')
+        timec(1) = str(peek(time, 1) - '0')
+        timec(2) = str(peek(time, 3) - '0')
+        timec(3) = str(peek(time, 4) - '0')
+        repeat 4
+            if(timec(cnt) == n) : play_music_flag = 1
+        loop
+        if(play_music_flag == 1) : gosub *play_music
+        
+        wait 5
+    loop
+    gosub *draw_setting_screen
+return
+
+*retrun_screen
+    return_flag = 1
+return
+*play_music
+    dmmplay 0
+    repeat
+        gettimestr time
+        title time
+        redraw 0
+            color 255, 255, 255 : boxf
+            color 0, 0, 0
+            pos 0, 0
+            mes "曲を流しています"
+            mes "現在時刻 : " + time
+        redraw 1
+        dmmstat play_stat, 0, 16
+        if(play_stat == 0) : break
+        if(return_flag == 1) : break
+        await 5
+    loop
+    dmmstop 0
+    dmmdel 0
+    play_music_flag = 0
+return
